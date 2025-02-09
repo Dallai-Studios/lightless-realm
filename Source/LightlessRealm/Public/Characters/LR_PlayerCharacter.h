@@ -68,17 +68,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
 	void MoveRight();
 
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
+	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AttackUp();
 
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
+	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AttackDown();
 
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
+	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AttackLeft();
 
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
+	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AttackRight();
+
+	UFUNCTION(BlueprintCallable, Category="Player Attack")
+	void AnimateAttack(float flipbookMovementAmount);
 
 private:
 	void MoveCharacter(float deltaTime);

@@ -4,9 +4,9 @@
 #include "ELRPlayerMovementDirection.generated.h"
 
 UENUM(BlueprintType)
-enum ELRPlayerMovementDirection : uint8 {
-	DIRECTION_UP,
-	DIRECTION_DOWN,
-	DIRECTION_LEFT,
-	DIRECTION_RIGHT,
+enum ElrPlayerAttackDirection : uint8 {
+	ATTACK_UP,
+	ATTACK_DOWN,
+	ATTACK_LEFT,
+	ATTACK_RIGHT,
 };
