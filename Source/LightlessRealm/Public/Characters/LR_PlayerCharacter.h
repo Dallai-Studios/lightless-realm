@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Enums/ELRPlayerAttackDirection.h"
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "GameFramework/Character.h"
 #include "LR_PlayerCharacter.generated.h"
@@ -49,6 +50,7 @@ private:
 	bool canMove = true;
 	FVector destinationLocation;
 	ELRPlayerMovementDirection currentMovementDirection;
+	ELRPlayerAttackDirection currentAttackDirection;
 	
 public:
 	ALR_PlayerCharacter();

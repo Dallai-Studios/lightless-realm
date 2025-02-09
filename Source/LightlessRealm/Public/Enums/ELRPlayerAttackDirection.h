@@ -1,10 +1,10 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "ELRPlayerMovementDirection.generated.h"
+#include "ELRPlayerAttackDirection.generated.h"
 
 UENUM(BlueprintType)
-enum ElrPlayerAttackDirection : uint8 {
+enum ELRPlayerAttackDirection : uint8 {
 	ATTACK_UP,
 	ATTACK_DOWN,
 	ATTACK_LEFT,

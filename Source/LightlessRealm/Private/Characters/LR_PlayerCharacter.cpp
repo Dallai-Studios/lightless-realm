@@ -3,6 +3,7 @@
 #include "Camera/CameraComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "Data/LR_GameEventsPDA.h"
+#include "Enums/ELRPlayerAttackDirection.h"
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -84,22 +85,58 @@ void ALR_PlayerCharacter::MoveRight() {
 
 void ALR_PlayerCharacter::AttackUp() {
 	if (!this->playerCanReceiveAttackInput) return;
+	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_UP;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
 void ALR_PlayerCharacter::AttackDown() {
 	if (!this->playerCanReceiveAttackInput) return;
+	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_DOWN;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
 void ALR_PlayerCharacter::AttackLeft() {
 	if (!this->playerCanReceiveAttackInput) return;
+
+	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+	if (flippedScale.X < 0) flippedScale.X *= -1;
+	this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	
+	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_LEFT;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
 void ALR_PlayerCharacter::AttackRight() {
 	if (!this->playerCanReceiveAttackInput) return;
+	
+	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+	if (flippedScale.X > 0) flippedScale.X *= -1;
+	this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	
+	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_RIGHT;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+}
+
+void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
+	auto newPosition = this->flipbookComponent->GetRelativeLocation();
+	
+	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_UP) {
+		newPosition = FVector(newPosition.X + flipbookMovementAmount, newPosition.Y, newPosition.Z);
+	}
+
+	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) {
+		newPosition = FVector(newPosition.X - flipbookMovementAmount, newPosition.Y, newPosition.Z);
+	}
+
+	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
+		newPosition = FVector(newPosition.X, newPosition.Y - flipbookMovementAmount, newPosition.Z);
+	}
+
+	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
+		newPosition = FVector(newPosition.X, newPosition.Y + flipbookMovementAmount, newPosition.Z);
+	}
+
+	this->flipbookComponent->SetRelativeLocation(newPosition);
 }
 
 void ALR_PlayerCharacter::MoveCharacter(float deltaTime) {
