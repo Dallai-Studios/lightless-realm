@@ -35,6 +35,7 @@ void ALR_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 }
 
 void ALR_PlayerCharacter::MoveUp() {
+	if (!this->playerCanReceiveMovementInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
 	
@@ -44,6 +45,7 @@ void ALR_PlayerCharacter::MoveUp() {
 }
 
 void ALR_PlayerCharacter::MoveDown() {
+	if (!this->playerCanReceiveMovementInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
 	
@@ -53,6 +55,7 @@ void ALR_PlayerCharacter::MoveDown() {
 }
 
 void ALR_PlayerCharacter::MoveLeft() {
+	if (!this->playerCanReceiveMovementInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
 	if (flippedScale.X < 0) flippedScale.X *= -1;
@@ -66,6 +69,7 @@ void ALR_PlayerCharacter::MoveLeft() {
 }
 
 void ALR_PlayerCharacter::MoveRight() {
+	if (!this->playerCanReceiveMovementInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
 	if (flippedScale.X > 0) flippedScale.X *= -1;
@@ -79,18 +83,22 @@ void ALR_PlayerCharacter::MoveRight() {
 }
 
 void ALR_PlayerCharacter::AttackUp() {
+	if (!this->playerCanReceiveAttackInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
 void ALR_PlayerCharacter::AttackDown() {
+	if (!this->playerCanReceiveAttackInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
 void ALR_PlayerCharacter::AttackLeft() {
+	if (!this->playerCanReceiveAttackInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
 void ALR_PlayerCharacter::AttackRight() {
+	if (!this->playerCanReceiveAttackInput) return;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 

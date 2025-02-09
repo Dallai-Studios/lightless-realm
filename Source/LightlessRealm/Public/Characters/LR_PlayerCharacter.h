@@ -22,16 +22,29 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class UPaperFlipbookComponent> flipbookComponent;
-
+	
 	UPROPERTY(EditAnywhere, Category="Player Movement")
 	float movementSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Player Movement")
+	float movementDelayTime;
 
 	UPROPERTY(EditAnywhere, Category="Player Movement")
 	float movementSize;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Player Movement")
+	float floorDetectionRaySize;
+
 	UPROPERTY(EditAnywhere, Category="Player Attack")
 	float meleeAttackRange;
 
+protected:
+	UPROPERTY(BlueprintReadWrite, Category="Player Movement")
+	bool playerCanReceiveMovementInput = true;
+
+	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
+	bool playerCanReceiveAttackInput = true;
+	
 private:
 	bool canMove = true;
 	FVector destinationLocation;
