@@ -165,3 +165,23 @@ bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction
 	
 	return hitResult.IsValidBlockingHit();
 }
+
+bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {
+	auto lineStart = this->GetActorLocation();
+	FHitResult hitResult;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	
+	FVector lineEnd;
+	
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_UP) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize);
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize * -1);
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize);
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize * -1);
+	
+	this->GetWorld()->LineTraceSingleByChannel(hitResult, lineStart, lineEnd, ECC_Visibility, params);
+	
+	DrawDebugLine(this->GetWorld(), lineStart, lineEnd, hitResult.IsValidBlockingHit() ? FColor::Green : FColor::Red, false, 10);
+	
+	return hitResult.IsValidBlockingHit();
+}

@@ -11,5 +11,9 @@ class LIGHTLESSREALM_API ULR_GameEventsPDA : public UPrimaryDataAsset {
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category="Game Events")
 	FOnDispatchGlobalEvent OnPlayerPerformAction;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category="Game Events")
+	FOnDispatchGlobalEvent OnReturnToMainMenu;
 };

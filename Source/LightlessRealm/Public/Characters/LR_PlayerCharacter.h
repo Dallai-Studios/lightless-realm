@@ -12,7 +12,7 @@ class LIGHTLESSREALM_API ALR_PlayerCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category="Data and Events")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Data and Events")
 	TObjectPtr<class ULR_GameEventsPDA> gameEvents;
 	
 	UPROPERTY(EditAnywhere, Category="Components")
@@ -45,6 +45,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
 	bool playerCanReceiveAttackInput = true;
+
+	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
+	bool playerCanPerformAttackAnimation = true;
 	
 private:
 	bool canMove = true;
@@ -88,4 +91,5 @@ public:
 private:
 	void MoveCharacter(float deltaTime);
 	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
+	bool CheckForAttackableEntity(ELRPlayerAttackDirection AttackDirection);
 };
