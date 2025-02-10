@@ -15,6 +15,7 @@ class ULR_GameEventsPDA;
 class ULR_EnemyPDA;
 class UPrimitiveComponent;
 class AActor;
+class ULR_GameInstance;
 
 UCLASS()
 class LIGHTLESSREALM_API ALR_Enemy : public AActor {
@@ -76,7 +77,7 @@ public:
 	void CheckForTarget(
 		UPrimitiveComponent* overlapedComponent,
 		AActor* otherActor,
-		UPrimitiveComponent otherComponent,
+		UPrimitiveComponent* otherComponent,
 		int32 otherBodyIndex,
 		bool fromSweep,
 		const FHitResult &SweepResult
@@ -93,5 +94,5 @@ private:
 	void Configure();
 
 	UFUNCTION()
-	void SetupEnemyBasedOnSelectedCharacter();
+	void SetupEnemyBasedOnSelectedCharacter(ULR_GameInstance* gameInstance);
 };

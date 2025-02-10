@@ -1,10 +1,12 @@
 ﻿#include "Actors/LR_Enemy.h"
 #include "PaperFlipbookComponent.h"
+#include "Characters/LR_PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Data/LR_EnemyPDA.h"
 #include "Data/LR_GameEventsPDA.h"
 #include "Data/LR_GameInstance.h"
+#include "Data/LR_PlayerCharacterPDA.h"
 
 
 // lifecycles:
@@ -37,7 +39,9 @@ void ALR_Enemy::BeginPlay() {
 	this->destinationLocation = this->GetActorLocation();
 
 	ULR_GameInstance* gameInstance = Cast<ULR_GameInstance>(this->GetWorld()->GetGameInstance());
-	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter();
+	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter(gameInstance);
+
+	this->playerDetectionSphere->OnComponentBeginOverlap.AddDynamic(this, &ALR_Enemy::ALR_Enemy::CheckForTarget);
 }
 
 
@@ -56,6 +60,7 @@ void ALR_Enemy::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 
 // common:
 void ALR_Enemy::MoveUp() {
+	if (!this->canMoveUp) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_UP;
@@ -63,7 +68,9 @@ void ALR_Enemy::MoveUp() {
 	this->destinationLocation = FVector(currentLocation.X + this->movementSize, currentLocation.Y, currentLocation.Z);
 }
 
+
 void ALR_Enemy::MoveDown() {
+	if (!this->canMoveDown) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_DOWN;
@@ -71,7 +78,9 @@ void ALR_Enemy::MoveDown() {
 	this->destinationLocation = FVector(currentLocation.X + (this->movementSize * -1), currentLocation.Y, currentLocation.Z);
 }
 
+
 void ALR_Enemy::MoveLeft() {
+	if (!this->canMoveLeft) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_LEFT;
@@ -83,7 +92,9 @@ void ALR_Enemy::MoveLeft() {
 	this->flipbookComponent->SetRelativeScale3D(flippedScale);
 }
 
+
 void ALR_Enemy::MoveRight() {
+	if (!this->canMoveRight) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_RIGHT;
@@ -95,6 +106,7 @@ void ALR_Enemy::MoveRight() {
 	this->flipbookComponent->SetRelativeScale3D(flippedScale);
 }
 
+
 void ALR_Enemy::RespondToPlayerAction() {
 	/**
 	 * todo: 1 - Escolher randomicamente uma direção para se mover fazendo um random entre 1 e 4
@@ -103,7 +115,6 @@ void ALR_Enemy::RespondToPlayerAction() {
 	 * todo: 3 - Adiciona o movimento pra direção escolhida, a movimentação será cuidada pelo update
 	 * todo: 4 - verifica se o player está no raio de visão, caso esteja, adiciona como target
 	 */
-
 	
 
 	// caso tenho um target ativo, a logica é bem mais complicada
@@ -119,10 +130,12 @@ void ALR_Enemy::RespondToPlayerAction() {
 	if (randomDirection == 0 || randomDirection == 5) return;
 }
 
+
 void ALR_Enemy::MoveEnemy(float deltaTime) {
 	FVector newLocation = FMath::LerpStable(this->GetActorLocation(), this->destinationLocation, deltaTime * this->movementSpeed);
 	this->SetActorLocation(newLocation);
 }
+
 
 bool ALR_Enemy::CheckForPathBlock(ELRPlayerMovementDirection direction) {
 	auto lineStart = this->GetActorLocation();
@@ -144,23 +157,38 @@ bool ALR_Enemy::CheckForPathBlock(ELRPlayerMovementDirection direction) {
 	return hitResult.IsValidBlockingHit();
 }
 
+
 void ALR_Enemy::Configure() {
 	if (this->enemyConfig) {
 		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
 	}
 }
 
-void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter() {
+
+void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter(ULR_GameInstance* gameInstance) {
+	check(gameInstance);
+	check(gameInstance->gameSelectedCharacter);
 	
+	if (gameInstance->gameSelectedCharacter->easyToDetect) {
+		this->playerDetectionSphere->SetSphereRadius(this->playerDetectionSphere->GetScaledSphereRadius() * 2);
+	}
+
+	if (gameInstance->gameSelectedCharacter->hardToDetectOnShadows) {
+		this->playerDetectionSphere->SetSphereRadius(this->playerDetectionSphere->GetScaledSphereRadius() / 2);
+	}
 }
+
 
 void ALR_Enemy::CheckForTarget(
 	UPrimitiveComponent* overlapedComponent, 
 	AActor* otherActor, 
-	UPrimitiveComponent otherComponent,
+	UPrimitiveComponent* otherComponent,
 	int32 otherBodyIndex,
 	bool fromSweep,
 	const FHitResult& SweepResult
 ) {
+	ALR_PlayerCharacter* player = Cast<ALR_PlayerCharacter>(otherActor);
+	if (IsValid(player)) {
 		
+	}
 }
