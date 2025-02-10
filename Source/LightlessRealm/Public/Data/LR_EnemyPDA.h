@@ -14,4 +14,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Enemy Properties")
 	TObjectPtr<class UPaperFlipbook> enemyFlipbook;
+
+	UPROPERTY(EditAnywhere, Category="Enemy Attributes")
+	float sightSize;
 };

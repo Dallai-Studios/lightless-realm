@@ -1,11 +1,13 @@
 ﻿#include "Actors/LR_Enemy.h"
-
 #include "PaperFlipbookComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Data/LR_EnemyPDA.h"
 #include "Data/LR_GameEventsPDA.h"
+#include "Data/LR_GameInstance.h"
 
 
+// lifecycles:
 ALR_Enemy::ALR_Enemy() {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -15,23 +17,46 @@ ALR_Enemy::ALR_Enemy() {
 	this->flipbookComponent = this->CreateDefaultSubobject<UPaperFlipbookComponent>("Flipbook Component");
 	this->flipbookComponent->SetupAttachment(this->collision);
 
-	if (this->enemyConfig) {
+	this->playerDetectionSphere = this->CreateDefaultSubobject<USphereComponent>("Player Detection Sphere");
+	
+	if (this->enemyConfig != nullptr) {
 		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
 	}
 }
 
+
 void ALR_Enemy::BeginPlay() {
 	Super::BeginPlay();
+
+	// essa configuração serve só pra ler todas as propriedades do data asset que representa esse inimigo
+	// nenhuma configuração é feita para validar o personagem selecionado pelo jogador. -Renan
+	this->Configure();
+
 	if (this->gameEvents) this->gameEvents->OnPlayerPerformAction.AddDynamic(this, &ALR_Enemy::ALR_Enemy::RespondToPlayerAction);
+
+	this->destinationLocation = this->GetActorLocation();
+
+	ULR_GameInstance* gameInstance = Cast<ULR_GameInstance>(this->GetWorld()->GetGameInstance());
+	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter();
 }
+
 
 void ALR_Enemy::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 	this->MoveEnemy(DeltaTime);
 }
 
+
+void ALR_Enemy::EndPlay(const EEndPlayReason::Type EndPlayReason) {
+	Super::EndPlay(EndPlayReason);
+	this->Destroy();
+}
+
+
+
+// common:
 void ALR_Enemy::MoveUp() {
-	if (!this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
+	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_UP;
 	FVector currentLocation = this->GetActorLocation();
@@ -39,7 +64,7 @@ void ALR_Enemy::MoveUp() {
 }
 
 void ALR_Enemy::MoveDown() {
-	if (!this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
+	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_DOWN;
 	FVector currentLocation = this->GetActorLocation();
@@ -47,7 +72,7 @@ void ALR_Enemy::MoveDown() {
 }
 
 void ALR_Enemy::MoveLeft() {
-	if (!this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
+	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_LEFT;
 	FVector currentLocation = this->GetActorLocation();
@@ -59,7 +84,7 @@ void ALR_Enemy::MoveLeft() {
 }
 
 void ALR_Enemy::MoveRight() {
-	if (!this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
+	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_RIGHT;
 	FVector currentLocation = this->GetActorLocation();
@@ -73,16 +98,28 @@ void ALR_Enemy::MoveRight() {
 void ALR_Enemy::RespondToPlayerAction() {
 	/**
 	 * todo: 1 - Escolher randomicamente uma direção para se mover fazendo um random entre 1 e 4
-	 * todo: caso 1-UP 2-DOWN 3-LEFT 4-RIGHT
+	 * todo: caso 1-UP 2-DOWN 3-LEFT 4-RIGHT 0 e 5-STAY
 	 * todo: 2 - Verificar se pode ir pra direção escolhida, se não puder ja não faz mas nada
 	 * todo: 3 - Adiciona o movimento pra direção escolhida, a movimentação será cuidada pelo update
 	 * todo: 4 - verifica se o player está no raio de visão, caso esteja, adiciona como target
 	 */
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Blue, TEXT("Listened to player action"));
+
+	
+
+	// caso tenho um target ativo, a logica é bem mais complicada
+	if (IsValid(this->activeTarget)) {
+		return;
+	}
+	
+	auto randomDirection = FMath::RandRange(0, 5);
+	if (randomDirection == 1) this->MoveUp();
+	if (randomDirection == 2) this->MoveDown();
+	if (randomDirection == 3) this->MoveLeft();
+	if (randomDirection == 4) this->MoveRight();
+	if (randomDirection == 0 || randomDirection == 5) return;
 }
 
 void ALR_Enemy::MoveEnemy(float deltaTime) {
-	if (this->destinationLocation == this->GetActorLocation()) return;
 	FVector newLocation = FMath::LerpStable(this->GetActorLocation(), this->destinationLocation, deltaTime * this->movementSpeed);
 	this->SetActorLocation(newLocation);
 }
@@ -105,4 +142,25 @@ bool ALR_Enemy::CheckForPathBlock(ELRPlayerMovementDirection direction) {
 	DrawDebugLine(this->GetWorld(), lineStart, lineEnd, hitResult.IsValidBlockingHit() ? FColor::Green : FColor::Red, false, 10);
 	
 	return hitResult.IsValidBlockingHit();
+}
+
+void ALR_Enemy::Configure() {
+	if (this->enemyConfig) {
+		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
+	}
+}
+
+void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter() {
+	
+}
+
+void ALR_Enemy::CheckForTarget(
+	UPrimitiveComponent* overlapedComponent, 
+	AActor* otherActor, 
+	UPrimitiveComponent otherComponent,
+	int32 otherBodyIndex,
+	bool fromSweep,
+	const FHitResult& SweepResult
+) {
+		
 }

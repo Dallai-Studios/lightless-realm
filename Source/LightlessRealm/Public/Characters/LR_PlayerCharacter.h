@@ -12,6 +12,9 @@ class LIGHTLESSREALM_API ALR_PlayerCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<class UAbilitySystemComponent> abilitySystemComponent;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Data and Events")
 	TObjectPtr<class ULR_GameEventsPDA> gameEvents;
 	
@@ -23,6 +26,18 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class UPaperFlipbookComponent> flipbookComponent;
+
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class USpotLightComponent> innerLight;
+
+	UPROPERTY(EditAnywhere, Category="Player Character")
+	class ULR_PlayerCharacterPDA* selectedCharacter;
+
+	UPROPERTY(EditAnywhere, Category="Player Character")
+	float defaultInnerLightSize = 26;
+
+	UPROPERTY(EditAnywhere, Category="Player Character")
+	float doubleInnerLightSize = 38;
 	
 	UPROPERTY(EditAnywhere, Category="Player Movement")
 	float movementSpeed;
@@ -48,6 +63,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
 	bool playerCanPerformAttackAnimation = true;
+
+	UPROPERTY(BlueprintReadWrite, Category="Player Inputs")
+	bool isPlayerPassingTurn = false;
 	
 private:
 	bool canMove = true;
@@ -89,6 +107,7 @@ public:
 	void AnimateAttack(float flipbookMovementAmount);
 
 private:
+	void ConfigureCharacter();
 	void MoveCharacter(float deltaTime);
 	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
 	bool CheckForAttackableEntity(ELRPlayerAttackDirection AttackDirection);

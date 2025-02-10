@@ -2,10 +2,14 @@
 
 #include "Camera/CameraComponent.h"
 #include "PaperFlipbookComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Data/LR_GameEventsPDA.h"
+#include "Data/LR_GameInstance.h"
+#include "Data/LR_PlayerCharacterPDA.h"
 #include "Enums/ELRPlayerAttackDirection.h"
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "AbilitySystemComponent.h"
 
 ALR_PlayerCharacter::ALR_PlayerCharacter()
 {
@@ -19,10 +23,24 @@ ALR_PlayerCharacter::ALR_PlayerCharacter()
 
 	this->flipbookComponent = this->CreateDefaultSubobject<UPaperFlipbookComponent>("Character Flipbook");
 	this->flipbookComponent->SetupAttachment(this->RootComponent);
+
+	this->innerLight = this->CreateDefaultSubobject<USpotLightComponent>("Inner Light");
+	this->innerLight->SetupAttachment(this->RootComponent);
+
+	this->abilitySystemComponent = this->CreateDefaultSubobject<UAbilitySystemComponent>("Ability System");
 }
 
 void ALR_PlayerCharacter::BeginPlay() {
 	Super::BeginPlay();
+
+	ULR_GameInstance* gameInstance = CastChecked<ULR_GameInstance>(this->GetWorld()->GetGameInstance());
+
+	if (IsValid(gameInstance->gameSelectedCharacter)) {
+		this->selectedCharacter = gameInstance->gameSelectedCharacter;
+	} 
+
+	this->ConfigureCharacter();
+	
 	this->destinationLocation = this->GetActorLocation();
 }
 
@@ -138,6 +156,26 @@ void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
 
 	this->flipbookComponent->SetRelativeLocation(newPosition);
 }
+
+
+void ALR_PlayerCharacter::ConfigureCharacter() {
+	check(this->selectedCharacter);
+
+	this->flipbookComponent->SetFlipbook(this->selectedCharacter->characterFlipbook);
+
+	if (this->selectedCharacter->hasNoInnerLight) {
+		this->innerLight->SetVisibility(false);	
+	}
+
+	if (this->selectedCharacter->doubleInnerLightSize) {
+		this->innerLight->SetInnerConeAngle(this->doubleInnerLightSize);
+		this->innerLight->SetOuterConeAngle(this->doubleInnerLightSize);
+	} else {
+		this->innerLight->SetInnerConeAngle(this->defaultInnerLightSize);
+		this->innerLight->SetOuterConeAngle(this->defaultInnerLightSize);
+	}
+}
+
 
 void ALR_PlayerCharacter::MoveCharacter(float deltaTime) {
 	if (!this->canMove) return;
