@@ -9,7 +9,7 @@
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "AbilitySystemComponent.h"
-
+#include "Tools/LR_Utils.h"
 
 
 // =================================================
@@ -45,12 +45,12 @@ void ALR_PlayerCharacter::BeginPlay() {
 
 	this->ConfigureCharacter();
 	
-	this->destinationLocation = this->GetActorLocation();
+	this->targetLocation = this->GetActorLocation();
 }
 
 void ALR_PlayerCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-	this->MoveTowardsDestinyLocation();
+	this->MoveTowardsTargetLocation();
 }
 
 
@@ -59,88 +59,62 @@ void ALR_PlayerCharacter::Tick(float DeltaTime) {
 // Metodos de Movimento do Player:
 // =================================================
 void ALR_PlayerCharacter::MovePlayer(ELRPlayerMovementDirection movementDirection) {
-	if (!this->playerCanReceiveMovementInput || this->CheckForPathBlock(movementDirection)) return;
+	if (!this->playerCanReceiveMovementInput) return;
+
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X > 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
+	
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_LEFT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X < 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
+	
+	if (this->HasPathBlock(movementDirection)) return;
 
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+
+	this->playerCanReceiveMovementInput = false;
+
+	this->StartMovementCoolDown();
 	
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_UP) {
-		this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
+		this->targetLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
 		return;
 	}
 
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_DOWN) {
-		this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
+		this->targetLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
 		return;
 	}
 
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
-		this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
+		this->targetLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
 		return;
 	}
 
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_LEFT) {
-		this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
+		this->targetLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
 		return;
 	}
 }
 
-void ALR_PlayerCharacter::MoveUp() {
-	if (!this->playerCanReceiveMovementInput || this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
-
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-
-	this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
-}
-
-void ALR_PlayerCharacter::MoveDown() {
-	if (!this->playerCanReceiveMovementInput || this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
-	
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-
-	this->destinationLocation =  this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
-}
-
-void ALR_PlayerCharacter::MoveRight() {
-	if (!this->playerCanReceiveMovementInput) return;
-	
-	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X > 0) flippedScale.X *= -1;
-	this->flipbookComponent->SetRelativeScale3D(flippedScale);
-
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
-	
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-	
-	this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
-}
-
-void ALR_PlayerCharacter::MoveLeft() {
-	if (!this->playerCanReceiveMovementInput) return;
-	
-	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X < 0) flippedScale.X *= -1;
-	this->flipbookComponent->SetRelativeScale3D(flippedScale);
-
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
-	
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-	
-	this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
-}
-
-void ALR_PlayerCharacter::MoveTowardsDestinyLocation() {
+void ALR_PlayerCharacter::MoveTowardsTargetLocation() {
 	auto currentPosition = this->GetActorLocation();
 
-	if (FVector::Dist(currentPosition, this->destinationLocation) < 1.0f) {
-		this->SetActorLocation(this->destinationLocation);
+	if (FVector::Dist(currentPosition, this->targetLocation) < 1.0f) {
+		this->SetActorLocation(this->targetLocation);
 		return;
 	}
 
-	auto newPosition = FMath::VInterpConstantTo(currentPosition, this->destinationLocation, this->GetWorld()->GetDeltaSeconds(), this->movementSpeed);
+	auto newPosition = FMath::VInterpConstantTo(currentPosition, this->targetLocation, this->GetWorld()->GetDeltaSeconds(), this->movementSpeed);
 	this->SetActorLocation(newPosition);
 }
 
-bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction) {
+bool ALR_PlayerCharacter::HasPathBlock(ELRPlayerMovementDirection direction) {
 	auto lineStart = this->GetActorLocation();
 	FHitResult hitResult;
 	FCollisionQueryParams params;
@@ -160,6 +134,20 @@ bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction
 	return hitResult.IsValidBlockingHit();
 }
 
+void ALR_PlayerCharacter::StartMovementCoolDown() {
+	this->GetWorld()->GetTimerManager().SetTimer(
+		this->movementCoolDownTimeHandle,
+		this,
+		&ALR_PlayerCharacter::HandleMovementEffects,
+		this->movementDelayTime
+	);
+}
+
+void ALR_PlayerCharacter::HandleMovementEffects() {
+	this->GetWorld()->GetTimerManager().ClearTimer(this->movementCoolDownTimeHandle);
+	this->playerCanReceiveMovementInput = true;
+	// todo criar um actor component que toca a os efeitos de audio depois que isso foi executado;
+}
 
 
 // =================================================
@@ -171,40 +159,8 @@ void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
 	this->currentAttackDirection = attackDirection;
 
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-}
 
-void ALR_PlayerCharacter::AttackUp() {
-	if (!this->playerCanReceiveAttackInput) return;
-	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_UP;
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-}
-
-void ALR_PlayerCharacter::AttackDown() {
-	if (!this->playerCanReceiveAttackInput) return;
-	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_DOWN;
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-}
-
-void ALR_PlayerCharacter::AttackLeft() {
-	if (!this->playerCanReceiveAttackInput) return;
-
-	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X < 0) flippedScale.X *= -1;
-	this->flipbookComponent->SetRelativeScale3D(flippedScale);
-	
-	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_LEFT;
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-}
-
-void ALR_PlayerCharacter::AttackRight() {
-	if (!this->playerCanReceiveAttackInput) return;
-	
-	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X > 0) flippedScale.X *= -1;
-	this->flipbookComponent->SetRelativeScale3D(flippedScale);
-	
-	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_RIGHT;
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	this->playerCanReceiveAttackInput = false;
 }
 
 void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
@@ -270,13 +226,4 @@ void ALR_PlayerCharacter::ConfigureCharacter() {
 		this->innerLight->SetInnerConeAngle(this->defaultInnerLightSize);
 		this->innerLight->SetOuterConeAngle(this->defaultInnerLightSize);
 	}
-}
-
-
-
-// talvez não use mais
-void ALR_PlayerCharacter::MoveCharacter(float deltaTime) {
-	if (this->destinationLocation == this->GetActorLocation()) return;
-	FVector newLocation = FMath::LerpStable(this->GetActorLocation(), this->destinationLocation, deltaTime * this->movementSpeed);
-	this->SetActorLocation(newLocation);
 }

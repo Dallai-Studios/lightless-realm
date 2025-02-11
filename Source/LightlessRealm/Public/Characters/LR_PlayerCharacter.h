@@ -64,6 +64,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category="Player Movement")
 	bool isPlayerPassingTurn = false;
 
+	FTimerHandle movementCoolDownTimeHandle;
+
 
 
 	// =========================================
@@ -84,6 +86,8 @@ public:
 	UPROPERTY(EditAnywhere, Category="Player Attack")
 	TObjectPtr<UCurveVector> attackRightAnimationCurve;
 
+	FTimerHandle AttackCoolDownTimerHandle;
+
 	
 
 	// =========================================
@@ -100,7 +104,7 @@ public:
 	// =========================================
 	// Variavei de Controle
 	// =========================================
-	FVector destinationLocation;
+	FVector targetLocation;
 	ELRPlayerMovementDirection currentMovementDirection;
 	ELRPlayerAttackDirection currentAttackDirection;
 	
@@ -120,42 +124,20 @@ public:
 	// =================================================
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
 	void MovePlayer(ELRPlayerMovementDirection movementDirection);
-	
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
-	void MoveUp();
 
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
-	void MoveDown();
-
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
-	void MoveLeft();
-	
-	UFUNCTION(BlueprintCallable, Category="Player Movement")
-	void MoveRight();
-
-	void MoveTowardsDestinyLocation();
-	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
+	void MoveTowardsTargetLocation();
+	bool HasPathBlock(ELRPlayerMovementDirection direction);
+	void StartMovementCoolDown();
+	void HandleMovementEffects();
 
 
 
 	// =================================================
 	// Metodos de Ataque do Player:
 	// =================================================
-	UFUNCTION(BlueprintCallable, Category="PLayer Attack")
+	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void Attack(ELRPlayerAttackDirection attackDirection);
 	
-	UFUNCTION(BlueprintCallable, Category="Player Attack")
-	void AttackUp();
-
-	UFUNCTION(BlueprintCallable, Category="Player Attack")
-	void AttackDown();
-
-	UFUNCTION(BlueprintCallable, Category="Player Attack")
-	void AttackLeft();
-
-	UFUNCTION(BlueprintCallable, Category="Player Attack")
-	void AttackRight();
-
 	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AnimateAttack(float flipbookMovementAmount);
 
@@ -167,7 +149,4 @@ public:
 	// Metodos de Configuração do Player:
 	// =================================================
 	void ConfigureCharacter();
-
-private:
-	void MoveCharacter(float deltaTime);
 };

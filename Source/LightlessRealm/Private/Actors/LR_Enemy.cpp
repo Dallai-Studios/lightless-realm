@@ -61,7 +61,7 @@ void ALR_Enemy::Tick(float DeltaTime) {
 void ALR_Enemy::MoveUp() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
+	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
 	
 	this->destinationLocation = this->GetActorLocation() + this->GetActorForwardVector() * this->movementSize;
 }
@@ -69,7 +69,7 @@ void ALR_Enemy::MoveUp() {
 void ALR_Enemy::MoveDown() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
+	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
 	
 	this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
 }
@@ -77,7 +77,7 @@ void ALR_Enemy::MoveDown() {
 void ALR_Enemy::MoveLeft() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
+	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
 
 	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
 	if (flippedScale.X < 0) flippedScale.X *= -1;
@@ -89,7 +89,7 @@ void ALR_Enemy::MoveLeft() {
 void ALR_Enemy::MoveRight() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
+	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
 
 	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
 	if (flippedScale.X > 0) flippedScale.X *= -1;
@@ -98,7 +98,7 @@ void ALR_Enemy::MoveRight() {
 	this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
 }
 
-void ALR_PlayerCharacter::MoveTowardsDestinyLocation() {
+void ALR_Enemy::MoveTowardsDestinyLocation() {
 	auto currentPosition = this->GetActorLocation();
 
 	if (FVector::Dist(currentPosition, this->destinationLocation) < 1.0f) {
@@ -110,7 +110,7 @@ void ALR_PlayerCharacter::MoveTowardsDestinyLocation() {
 	this->SetActorLocation(newPosition);
 }
 
-bool ALR_Enemy::CheckForPathBlock(ELRPlayerMovementDirection direction) {
+bool ALR_Enemy::HasPathBlock(ELRPlayerMovementDirection direction) {
 	auto lineStart = this->GetActorLocation();
 	FHitResult hitResult;
 	FCollisionQueryParams params;
