@@ -11,6 +11,10 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "AbilitySystemComponent.h"
 
+
+// =================================================
+// Metodos de Life Cycle:
+// =================================================
 ALR_PlayerCharacter::ALR_PlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -30,6 +34,7 @@ ALR_PlayerCharacter::ALR_PlayerCharacter()
 	this->abilitySystemComponent = this->CreateDefaultSubobject<UAbilitySystemComponent>("Ability System");
 }
 
+
 void ALR_PlayerCharacter::BeginPlay() {
 	Super::BeginPlay();
 
@@ -44,41 +49,41 @@ void ALR_PlayerCharacter::BeginPlay() {
 	this->destinationLocation = this->GetActorLocation();
 }
 
+
 void ALR_PlayerCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-	this->MoveCharacter(DeltaTime);
+	this->MoveTowardsDestinyLocation();
 }
 
-void ALR_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
 
+
+// =================================================
+// Metodos de Movimento do Player:
+// =================================================
 void ALR_PlayerCharacter::MoveUp() {
-	if (!this->playerCanReceiveMovementInput) return;
+	if (!this->playerCanReceiveMovementInput || this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
+
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
-	
-	this->currentMovementDirection = ELRPlayerMovementDirection::DIRECTION_UP;
-	FVector currentLocation = this->GetActorLocation();
-	this->destinationLocation = FVector(currentLocation.X + this->movementSize, currentLocation.Y, currentLocation.Z);
+
+	this->destinationLocation = this->GetActorForwardVector() * this->movementSize;
 }
 
 void ALR_PlayerCharacter::MoveDown() {
-	if (!this->playerCanReceiveMovementInput) return;
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
+	if (!this->playerCanReceiveMovementInput || this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
 	
-	this->currentMovementDirection = ELRPlayerMovementDirection::DIRECTION_DOWN;
-	FVector currentLocation = this->GetActorLocation();
-	this->destinationLocation = FVector(currentLocation.X + (this->movementSize * -1), currentLocation.Y, currentLocation.Z);
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+
+	this->destinationLocation = this->GetActorForwardVector() * this->movementSize * -1;
 }
 
 void ALR_PlayerCharacter::MoveLeft() {
 	if (!this->playerCanReceiveMovementInput) return;
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	
 	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
 	if (flippedScale.X < 0) flippedScale.X *= -1;
 	this->flipbookComponent->SetRelativeScale3D(flippedScale);
+
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
 	
@@ -101,17 +106,24 @@ void ALR_PlayerCharacter::MoveRight() {
 	this->destinationLocation = FVector(currentLocation.X, currentLocation.Y + this->movementSize, currentLocation.Z);
 }
 
+
+
+// =================================================
+// Metodos de Ataque do Player:
+// =================================================
 void ALR_PlayerCharacter::AttackUp() {
 	if (!this->playerCanReceiveAttackInput) return;
 	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_UP;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
+
 void ALR_PlayerCharacter::AttackDown() {
 	if (!this->playerCanReceiveAttackInput) return;
 	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_DOWN;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
+
 
 void ALR_PlayerCharacter::AttackLeft() {
 	if (!this->playerCanReceiveAttackInput) return;
@@ -124,6 +136,7 @@ void ALR_PlayerCharacter::AttackLeft() {
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
+
 void ALR_PlayerCharacter::AttackRight() {
 	if (!this->playerCanReceiveAttackInput) return;
 	
@@ -134,6 +147,7 @@ void ALR_PlayerCharacter::AttackRight() {
 	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_RIGHT;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
+
 
 void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
 	auto newPosition = this->flipbookComponent->GetRelativeLocation();
@@ -155,6 +169,19 @@ void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
 	}
 
 	this->flipbookComponent->SetRelativeLocation(newPosition);
+}
+
+
+void ALR_PlayerCharacter::MoveTowardsDestinyLocation() {
+	auto currentPosition = this->GetActorLocation();
+
+	if (FVector::Dist(currentPosition, this->destinationLocation) < 1.0f) {
+		this->SetActorLocation(this->destinationLocation);
+		return;
+	}
+
+	auto newPosition = FMath::VInterpConstantTo(currentPosition, this->destinationLocation, this->GetWorld()->GetDeltaSeconds(), this->movementSpeed);
+	this->SetActorLocation(newPosition);
 }
 
 
@@ -184,6 +211,7 @@ void ALR_PlayerCharacter::MoveCharacter(float deltaTime) {
 	this->SetActorLocation(newLocation);
 }
 
+
 bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction) {
 	auto lineStart = this->GetActorLocation();
 	FHitResult hitResult;
@@ -203,6 +231,7 @@ bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction
 	
 	return hitResult.IsValidBlockingHit();
 }
+
 
 bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {
 	auto lineStart = this->GetActorLocation();

@@ -76,7 +76,6 @@ private:
 public:
 	ALR_PlayerCharacter();
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
@@ -107,6 +106,7 @@ public:
 	void AnimateAttack(float flipbookMovementAmount);
 
 private:
+	void MoveTowardsDestinyLocation();
 	void ConfigureCharacter();
 	void MoveCharacter(float deltaTime);
 	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
