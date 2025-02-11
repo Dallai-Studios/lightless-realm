@@ -78,6 +78,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
 	bool playerCanPerformAttackAnimation = true;
 
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	TObjectPtr<class UCurveVector> attackUpAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	TObjectPtr<UCurveVector> attackRightAnimationCurve;
+
 	
 
 	// =========================================
