@@ -242,7 +242,6 @@ void ALR_PlayerCharacter::ConfigureCharacter() {
 
 // talvez não use mais
 void ALR_PlayerCharacter::MoveCharacter(float deltaTime) {
-	if (!this->canMove) return;
 	if (this->destinationLocation == this->GetActorLocation()) return;
 	FVector newLocation = FMath::LerpStable(this->GetActorLocation(), this->destinationLocation, deltaTime * this->movementSpeed);
 	this->SetActorLocation(newLocation);
