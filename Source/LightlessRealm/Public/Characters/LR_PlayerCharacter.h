@@ -139,7 +139,7 @@ public:
 	void Attack(ELRPlayerAttackDirection attackDirection);
 	
 	UFUNCTION(BlueprintCallable, Category="Player Attack")
-	void AnimateAttack(float flipbookMovementAmount);
+	void AnimateAttack(ELRPlayerAttackDirection attackDirection);
 
 	bool CheckForAttackableEntity(ELRPlayerAttackDirection AttackDirection);
 

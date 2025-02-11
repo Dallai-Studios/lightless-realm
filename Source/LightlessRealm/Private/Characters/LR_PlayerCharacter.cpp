@@ -163,26 +163,8 @@ void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
 	this->playerCanReceiveAttackInput = false;
 }
 
-void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
-	auto newPosition = this->flipbookComponent->GetRelativeLocation();
+void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
 	
-	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_UP) {
-		newPosition = FVector(newPosition.X + flipbookMovementAmount, newPosition.Y, newPosition.Z);
-	}
-
-	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) {
-		newPosition = FVector(newPosition.X - flipbookMovementAmount, newPosition.Y, newPosition.Z);
-	}
-
-	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
-		newPosition = FVector(newPosition.X, newPosition.Y - flipbookMovementAmount, newPosition.Z);
-	}
-
-	if (this->currentAttackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
-		newPosition = FVector(newPosition.X, newPosition.Y + flipbookMovementAmount, newPosition.Z);
-	}
-
-	this->flipbookComponent->SetRelativeLocation(newPosition);
 }
 
 bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {
