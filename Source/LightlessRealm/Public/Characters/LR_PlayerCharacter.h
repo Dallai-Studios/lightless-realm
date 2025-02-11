@@ -67,7 +67,7 @@ public:
 
 
 	// =========================================
-	// Movimento do Player
+	// Ataque do Player
 	// =========================================
 	UPROPERTY(EditAnywhere, Category="Player Attack")
 	float meleeAttackRange;
@@ -119,6 +119,9 @@ public:
 	// Metodos de Movimento do Player:
 	// =================================================
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
+	void MovePlayer(ELRPlayerMovementDirection movementDirection);
+	
+	UFUNCTION(BlueprintCallable, Category="Player Movement")
 	void MoveUp();
 
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
@@ -138,6 +141,9 @@ public:
 	// =================================================
 	// Metodos de Ataque do Player:
 	// =================================================
+	UFUNCTION(BlueprintCallable, Category="PLayer Attack")
+	void Attack(ELRPlayerAttackDirection attackDirection);
+	
 	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AttackUp();
 

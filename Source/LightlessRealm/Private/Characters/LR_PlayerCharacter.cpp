@@ -58,6 +58,32 @@ void ALR_PlayerCharacter::Tick(float DeltaTime) {
 // =================================================
 // Metodos de Movimento do Player:
 // =================================================
+void ALR_PlayerCharacter::MovePlayer(ELRPlayerMovementDirection movementDirection) {
+	if (!this->playerCanReceiveMovementInput || this->CheckForPathBlock(movementDirection)) return;
+
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_UP) {
+		this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
+		return;
+	}
+
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_DOWN) {
+		this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
+		return;
+	}
+
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
+		this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
+		return;
+	}
+
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_LEFT) {
+		this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
+		return;
+	}
+}
+
 void ALR_PlayerCharacter::MoveUp() {
 	if (!this->playerCanReceiveMovementInput || this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
 
@@ -139,6 +165,14 @@ bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction
 // =================================================
 // Metodos de Ataque do Player:
 // =================================================
+void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
+	if (!this->playerCanReceiveAttackInput) return;
+
+	this->currentAttackDirection = attackDirection;
+
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+}
+
 void ALR_PlayerCharacter::AttackUp() {
 	if (!this->playerCanReceiveAttackInput) return;
 	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_UP;

@@ -1,7 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
-
+﻿#pragma once
 #include "CoreMinimal.h"
 #include "Enums/ELRPlayerAttackDirection.h"
 #include "GameFramework/Actor.h"
@@ -13,18 +10,31 @@ class LIGHTLESSREALM_API ALR_Enemy : public AActor {
 	GENERATED_BODY()
 
 public:
+	// =================================================
+	// Components:
+	// =================================================
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class UCapsuleComponent> collision;
 	
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class UPaperFlipbookComponent> flipbookComponent;
-	
+
+
+
+	// =================================================
+	// Dados e Eventos:
+	// =================================================
 	UPROPERTY(EditAnywhere, Category="Data and Events")
 	TObjectPtr<class ULR_GameEventsPDA> gameEvents;
 
 	UPROPERTY(EditAnywhere, Category="Data and Events")
 	TObjectPtr<class ULR_EnemyPDA> enemyConfig;
 
+
+
+	// =================================================
+	// Movimento do Inimigo:
+	// =================================================
 	UPROPERTY(EditAnywhere, Category="Enemy Movement")
 	float movementSize;
 
@@ -34,19 +44,27 @@ public:
 	UPROPERTY(EditAnywhere, Category="Enemy Movement")
 	bool canOnlyMoveWithActiveTarget = false;
 
-private:
-	ELRPlayerMovementDirection movementDirection;
-	ELRPlayerAttackDirection attackDirection;
 	FVector destinationLocation;
+	ELRPlayerMovementDirection movementDirection;
+	
+private:
+	ELRPlayerAttackDirection attackDirection;
 	class AActor* activeTarget;
 	ELRPlayerAttackDirection nextAttackDirection;
 	
 public:
+	// =================================================
+	// Metodos de Life Cycle:
+	// =================================================
 	ALR_Enemy();
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 
+
+
+	// =================================================
+	// Metodos de Movemento do Inimigo:
+	// =================================================
 	UFUNCTION(BlueprintCallable, Category="Enemy Movement")
 	void MoveUp();
 
@@ -59,29 +77,36 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Enemy, Movement")
 	void MoveRight();
 
-	UFUNCTION(BlueprintCallable, Category="Enemy Response")
+	void MoveTowardsDestinyLocation();
+	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
+
+
+	
+	// =================================================
+	// Metodos de Movemento do Inimigo:
+	// =================================================
+	void AttackUp();
+	void AttackDown();
+	void AttackRight();
+	void AttackLeft();
+	bool ActiveTargetIsInAttackRange();
+
+	
+
+	// =================================================
+	// Event Listeners:
+	// =================================================
+	UFUNCTION(BlueprintCallable, Category="Event Listeners")
 	void RespondToPlayerAction();
 
 	UFUNCTION(BlueprintCallable)
-	void CheckForTarget(
-		class UPrimitiveComponent* overlapedComponent,
-		AActor* otherActor,
-		UPrimitiveComponent* otherComponent,
-		int32 otherBodyIndex,
-		bool fromSweep,
-		const FHitResult &SweepResult
-	);
-	
-private:
-	UFUNCTION()
-	void MoveEnemy(float deltaTime);
+	void CheckForTarget(AActor* otherActor);
 
-	UFUNCTION()
-	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
 
-	UFUNCTION()
-	bool ActiveTargetIsInAttackRange();
-	
+
+	// =================================================
+	// Metodos de Configuração:
+	// =================================================
 	UFUNCTION(CallInEditor)
 	void Configure();
 
