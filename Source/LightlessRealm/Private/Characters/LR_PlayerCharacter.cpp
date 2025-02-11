@@ -63,7 +63,7 @@ void ALR_PlayerCharacter::MoveUp() {
 
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 
-	this->destinationLocation = this->GetActorForwardVector() * this->movementSize;
+	this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
 }
 
 void ALR_PlayerCharacter::MoveDown() {
@@ -71,7 +71,7 @@ void ALR_PlayerCharacter::MoveDown() {
 	
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 
-	this->destinationLocation = this->GetActorForwardVector() * this->movementSize * -1;
+	this->destinationLocation =  this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
 }
 
 void ALR_PlayerCharacter::MoveRight() {
@@ -85,21 +85,21 @@ void ALR_PlayerCharacter::MoveRight() {
 	
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	
-	this->destinationLocation = this->GetActorRightVector() * this->movementSize;
+	this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
 }
 
 void ALR_PlayerCharacter::MoveLeft() {
 	if (!this->playerCanReceiveMovementInput) return;
 	
 	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X > 0) flippedScale.X *= -1;
+	if (flippedScale.X < 0) flippedScale.X *= -1;
 	this->flipbookComponent->SetRelativeScale3D(flippedScale);
 
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
 	
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	
-	this->destinationLocation = this->GetActorRightVector() * this->movementSize * -1;
+	this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
 }
 
 void ALR_PlayerCharacter::MoveTowardsDestinyLocation() {

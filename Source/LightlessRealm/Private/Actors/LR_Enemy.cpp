@@ -10,7 +10,10 @@
 #include "Tools/LR_Utils.h"
 
 
-// lifecycles:
+
+// =================================================
+// Metodos de Life Cycle:
+// =================================================
 ALR_Enemy::ALR_Enemy() {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -24,7 +27,6 @@ ALR_Enemy::ALR_Enemy() {
 		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
 	}
 }
-
 
 void ALR_Enemy::BeginPlay() {
 	Super::BeginPlay();
@@ -41,7 +43,6 @@ void ALR_Enemy::BeginPlay() {
 	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter(gameInstance);
 }
 
-
 void ALR_Enemy::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 	this->MoveEnemy(DeltaTime);
@@ -51,7 +52,6 @@ void ALR_Enemy::Tick(float DeltaTime) {
 	}
 }
 
-
 void ALR_Enemy::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	Super::EndPlay(EndPlayReason);
 	this->Destroy();
@@ -59,7 +59,9 @@ void ALR_Enemy::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 
 
 
-// common:
+// =================================================
+// Metodos de Movemento do Inimigo:
+// =================================================
 void ALR_Enemy::MoveUp() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
@@ -69,7 +71,6 @@ void ALR_Enemy::MoveUp() {
 	this->destinationLocation = FVector(currentLocation.X + this->movementSize, currentLocation.Y, currentLocation.Z);
 }
 
-
 void ALR_Enemy::MoveDown() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
@@ -78,7 +79,6 @@ void ALR_Enemy::MoveDown() {
 	FVector currentLocation = this->GetActorLocation();
 	this->destinationLocation = FVector(currentLocation.X + (this->movementSize * -1), currentLocation.Y, currentLocation.Z);
 }
-
 
 void ALR_Enemy::MoveLeft() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
@@ -92,7 +92,6 @@ void ALR_Enemy::MoveLeft() {
 	if (flippedScale.X < 0) flippedScale.X *= -1;
 	this->flipbookComponent->SetRelativeScale3D(flippedScale);
 }
-
 
 void ALR_Enemy::MoveRight() {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
@@ -108,6 +107,10 @@ void ALR_Enemy::MoveRight() {
 }
 
 
+
+// =================================================
+// Event Listeners:
+// =================================================
 void ALR_Enemy::RespondToPlayerAction() {
 	// caso tenho um target ativo, a logica é bem mais complicada. Eu vou ter que calcular o caminho mais simples.
 	// mas vou usar só um Breadth First Search simples que resolve o problema. -Renan
@@ -122,13 +125,13 @@ void ALR_Enemy::RespondToPlayerAction() {
 		FVector playerPosition = activeTarget->GetActorLocation();
 
 		// Normalizando para simular um grid sem grid
-		int enemyX = FMath::RoundToInt(enemyPosition.X) / this->movementSize;
-		int enemyY = FMath::RoundToInt(enemyPosition.Y) / this->movementSize;
+		int enemyX = FMath::RoundToInt(enemyPosition.X / this->movementSize);
+		int enemyY = FMath::RoundToInt(enemyPosition.Y / this->movementSize);
 
 		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Enemy Position X: %d Enemy Position Y: %d"), enemyX, enemyY));
 		
-		int playerX = FMath::RoundToInt(playerPosition.X) / this->movementSize;
-		int playerY = FMath::RoundToInt(playerPosition.Y) / this->movementSize;
+		int playerX = FMath::RoundToInt(playerPosition.X / this->movementSize);
+		int playerY = FMath::RoundToInt(playerPosition.Y / this->movementSize);
 
 		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Player Position X: %d Player Position Y: %d"), playerX, playerY));
 
@@ -141,9 +144,9 @@ void ALR_Enemy::RespondToPlayerAction() {
 		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Delta X: %d Delta Y: %d"), deltaX, deltaY));
 
 		if (FMath::Abs(deltaX) > FMath::Abs(deltaY)) {
-			if (deltaX > 0) this->MoveRight(); else this->MoveLeft();
+			if (deltaX > 0) this->MoveUp(); else this->MoveDown();
 		} else {
-			if (deltaY > 0) this->MoveUp(); else this->MoveDown();
+			if (deltaY > 0) this->MoveRight(); else this->MoveLeft();
 		}
 		
 		return;
