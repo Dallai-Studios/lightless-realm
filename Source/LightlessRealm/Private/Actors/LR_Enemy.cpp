@@ -1,13 +1,19 @@
 ﻿#include "Actors/LR_Enemy.h"
 #include "PaperFlipbookComponent.h"
+#include "Characters/LR_PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Data/LR_EnemyPDA.h"
 #include "Data/LR_GameEventsPDA.h"
 #include "Data/LR_GameInstance.h"
+#include "Data/LR_PlayerCharacterPDA.h"
+#include "Tools/LR_Utils.h"
 
 
-// lifecycles:
+
+// =================================================
+// Metodos de Life Cycle:
+// =================================================
 ALR_Enemy::ALR_Enemy() {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -16,14 +22,11 @@ ALR_Enemy::ALR_Enemy() {
 
 	this->flipbookComponent = this->CreateDefaultSubobject<UPaperFlipbookComponent>("Flipbook Component");
 	this->flipbookComponent->SetupAttachment(this->collision);
-
-	this->playerDetectionSphere = this->CreateDefaultSubobject<USphereComponent>("Player Detection Sphere");
 	
 	if (this->enemyConfig != nullptr) {
 		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
 	}
 }
-
 
 void ALR_Enemy::BeginPlay() {
 	Super::BeginPlay();
@@ -37,15 +40,17 @@ void ALR_Enemy::BeginPlay() {
 	this->destinationLocation = this->GetActorLocation();
 
 	ULR_GameInstance* gameInstance = Cast<ULR_GameInstance>(this->GetWorld()->GetGameInstance());
-	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter();
+	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter(gameInstance);
 }
-
 
 void ALR_Enemy::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 	this->MoveEnemy(DeltaTime);
-}
 
+	if (IsValid(this->activeTarget)) {
+		DrawDebugLine(this->GetWorld(), this->GetActorLocation(), this->activeTarget->GetActorLocation(), FColor::Orange);
+	}
+}
 
 void ALR_Enemy::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	Super::EndPlay(EndPlayReason);
@@ -54,8 +59,11 @@ void ALR_Enemy::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 
 
 
-// common:
+// =================================================
+// Metodos de Movemento do Inimigo:
+// =================================================
 void ALR_Enemy::MoveUp() {
+	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_UP;
@@ -64,6 +72,7 @@ void ALR_Enemy::MoveUp() {
 }
 
 void ALR_Enemy::MoveDown() {
+	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_DOWN;
@@ -72,6 +81,7 @@ void ALR_Enemy::MoveDown() {
 }
 
 void ALR_Enemy::MoveLeft() {
+	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_LEFT;
@@ -84,6 +94,7 @@ void ALR_Enemy::MoveLeft() {
 }
 
 void ALR_Enemy::MoveRight() {
+	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
 	
 	this->movementDirection = ELRPlayerMovementDirection::DIRECTION_RIGHT;
@@ -95,19 +106,49 @@ void ALR_Enemy::MoveRight() {
 	this->flipbookComponent->SetRelativeScale3D(flippedScale);
 }
 
+
+
+// =================================================
+// Event Listeners:
+// =================================================
 void ALR_Enemy::RespondToPlayerAction() {
-	/**
-	 * todo: 1 - Escolher randomicamente uma direção para se mover fazendo um random entre 1 e 4
-	 * todo: caso 1-UP 2-DOWN 3-LEFT 4-RIGHT 0 e 5-STAY
-	 * todo: 2 - Verificar se pode ir pra direção escolhida, se não puder ja não faz mas nada
-	 * todo: 3 - Adiciona o movimento pra direção escolhida, a movimentação será cuidada pelo update
-	 * todo: 4 - verifica se o player está no raio de visão, caso esteja, adiciona como target
-	 */
+	// caso tenho um target ativo, a logica é bem mais complicada. Eu vou ter que calcular o caminho mais simples.
+	// mas vou usar só um Breadth First Search simples que resolve o problema. -Renan
+	if (this->activeTarget) {
+		if (this->ActiveTargetIsInAttackRange()) {
+			// this->StartAttackSequence();
+			ULR_Utils::ShowDebugMessage(TEXT("Attacking Player"));
+			return;
+		}
+		
+		FVector enemyPosition = GetActorLocation();
+		FVector playerPosition = activeTarget->GetActorLocation();
 
-	
+		// Normalizando para simular um grid sem grid
+		int enemyX = FMath::RoundToInt(enemyPosition.X / this->movementSize);
+		int enemyY = FMath::RoundToInt(enemyPosition.Y / this->movementSize);
 
-	// caso tenho um target ativo, a logica é bem mais complicada
-	if (IsValid(this->activeTarget)) {
+		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Enemy Position X: %d Enemy Position Y: %d"), enemyX, enemyY));
+		
+		int playerX = FMath::RoundToInt(playerPosition.X / this->movementSize);
+		int playerY = FMath::RoundToInt(playerPosition.Y / this->movementSize);
+
+		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Player Position X: %d Player Position Y: %d"), playerX, playerY));
+
+		// Esse delta serve pra ver se a direção em X é mais curta que a direção em Y
+		// se o delta for maior na direção X então a direção Y é que vai ser priorizada
+		// independente do caso
+		int deltaX = playerX - enemyX;
+		int deltaY = playerY - enemyY;
+
+		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Delta X: %d Delta Y: %d"), deltaX, deltaY));
+
+		if (FMath::Abs(deltaX) > FMath::Abs(deltaY)) {
+			if (deltaX > 0) this->MoveUp(); else this->MoveDown();
+		} else {
+			if (deltaY > 0) this->MoveRight(); else this->MoveLeft();
+		}
+		
 		return;
 	}
 	
@@ -119,10 +160,12 @@ void ALR_Enemy::RespondToPlayerAction() {
 	if (randomDirection == 0 || randomDirection == 5) return;
 }
 
+
 void ALR_Enemy::MoveEnemy(float deltaTime) {
 	FVector newLocation = FMath::LerpStable(this->GetActorLocation(), this->destinationLocation, deltaTime * this->movementSpeed);
 	this->SetActorLocation(newLocation);
 }
+
 
 bool ALR_Enemy::CheckForPathBlock(ELRPlayerMovementDirection direction) {
 	auto lineStart = this->GetActorLocation();
@@ -144,23 +187,96 @@ bool ALR_Enemy::CheckForPathBlock(ELRPlayerMovementDirection direction) {
 	return hitResult.IsValidBlockingHit();
 }
 
+
+bool ALR_Enemy::ActiveTargetIsInAttackRange() {
+	auto lineStart = this->GetActorLocation();
+	auto lineEndUp = lineStart + (this->GetActorForwardVector() * this->movementSize);
+	auto lineEndDown = lineStart + (this->GetActorForwardVector() * -1 * this->movementSize);
+	auto lineEndRight = lineStart + (this->GetActorRightVector() * this->movementSize);
+	auto lineEndLeft = lineStart + (this->GetActorRightVector() * -1 * this->movementSize);
+
+	FHitResult hitResultUp;
+	FHitResult hitResultDown;
+	FHitResult hitResultRight;
+	FHitResult hitResultLeft;
+	
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+
+	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndUp, ECC_Visibility, params);
+	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndDown, ECC_Visibility, params);
+	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndRight, ECC_Visibility, params);
+	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndLeft, ECC_Visibility, params);
+
+	DrawDebugLine(this->GetWorld(), lineStart, lineEndUp, hitResultUp.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
+	DrawDebugLine(this->GetWorld(), lineStart, lineEndDown, hitResultDown.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
+	DrawDebugLine(this->GetWorld(), lineStart, lineEndRight, hitResultRight.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
+	DrawDebugLine(this->GetWorld(), lineStart, lineEndLeft, hitResultLeft.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
+
+	if (!hitResultUp.IsValidBlockingHit() && !hitResultDown.IsValidBlockingHit() && !hitResultRight.IsValidBlockingHit() && !hitResultLeft.IsValidBlockingHit()) {
+		return false;
+	}
+	
+	if (hitResultUp.IsValidBlockingHit()) {
+		auto player = Cast<ALR_PlayerCharacter>(hitResultUp.GetActor());
+		if (IsValid(player)) {
+			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_UP;
+			return true;
+		}
+	}
+
+	if (hitResultDown.IsValidBlockingHit()) {
+		auto player = Cast<ALR_PlayerCharacter>(hitResultDown.GetActor());
+		if (IsValid(player)) {
+			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_DOWN;
+			return true;
+		}
+	}
+	
+	if (hitResultRight.IsValidBlockingHit()) {
+		auto player = Cast<ALR_PlayerCharacter>(hitResultRight.GetActor());
+		if (IsValid(player)) {
+			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_RIGHT;
+			return true;
+		}
+	}
+
+	if (hitResultLeft.IsValidBlockingHit()) {
+		auto player = Cast<ALR_PlayerCharacter>(hitResultUp.GetActor());
+		if (IsValid(player)) {
+			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_LEFT;
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+
 void ALR_Enemy::Configure() {
 	if (this->enemyConfig) {
 		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
 	}
 }
 
-void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter() {
-	
+
+void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter(ULR_GameInstance* gameInstance) {
+	check(gameInstance);
+	check(gameInstance->gameSelectedCharacter);
 }
+
 
 void ALR_Enemy::CheckForTarget(
 	UPrimitiveComponent* overlapedComponent, 
 	AActor* otherActor, 
-	UPrimitiveComponent otherComponent,
+	UPrimitiveComponent* otherComponent,
 	int32 otherBodyIndex,
 	bool fromSweep,
 	const FHitResult& SweepResult
 ) {
-		
+	ALR_PlayerCharacter* player = Cast<ALR_PlayerCharacter>(otherActor);
+
+	if (IsValid(player)) {
+		this->activeTarget = player;
+	}
 }

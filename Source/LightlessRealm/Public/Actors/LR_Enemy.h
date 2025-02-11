@@ -8,33 +8,22 @@
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "LR_Enemy.generated.h"
 
-class USphereComponent;
-class UCapsuleComponent;
-class UPaperFlipbookComponent;
-class ULR_GameEventsPDA;
-class ULR_EnemyPDA;
-class UPrimitiveComponent;
-class AActor;
-
 UCLASS()
 class LIGHTLESSREALM_API ALR_Enemy : public AActor {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, Category="Components")
-	TObjectPtr<USphereComponent> playerDetectionSphere;
+	TObjectPtr<class UCapsuleComponent> collision;
 	
 	UPROPERTY(EditAnywhere, Category="Components")
-	TObjectPtr<UCapsuleComponent> collision;
+	TObjectPtr<class UPaperFlipbookComponent> flipbookComponent;
 	
-	UPROPERTY(EditAnywhere, Category="Components")
-	TObjectPtr<UPaperFlipbookComponent> flipbookComponent;
+	UPROPERTY(EditAnywhere, Category="Data and Events")
+	TObjectPtr<class ULR_GameEventsPDA> gameEvents;
 
 	UPROPERTY(EditAnywhere, Category="Data and Events")
-	TObjectPtr<ULR_GameEventsPDA> gameEvents;
-
-	UPROPERTY(EditAnywhere, Category="Data and Events")
-	TObjectPtr<ULR_EnemyPDA> enemyConfig;
+	TObjectPtr<class ULR_EnemyPDA> enemyConfig;
 
 	UPROPERTY(EditAnywhere, Category="Enemy Movement")
 	float movementSize;
@@ -43,13 +32,14 @@ public:
 	float movementSpeed;
 
 	UPROPERTY(EditAnywhere, Category="Enemy Movement")
-	bool canMoveUp = true, canMoveDown = true, canMoveLeft = true, canMoveRight = true;
+	bool canOnlyMoveWithActiveTarget = false;
 
 private:
 	ELRPlayerMovementDirection movementDirection;
 	ELRPlayerAttackDirection attackDirection;
 	FVector destinationLocation;
-	AActor* activeTarget;
+	class AActor* activeTarget;
+	ELRPlayerAttackDirection nextAttackDirection;
 	
 public:
 	ALR_Enemy();
@@ -74,9 +64,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void CheckForTarget(
-		UPrimitiveComponent* overlapedComponent,
+		class UPrimitiveComponent* overlapedComponent,
 		AActor* otherActor,
-		UPrimitiveComponent otherComponent,
+		UPrimitiveComponent* otherComponent,
 		int32 otherBodyIndex,
 		bool fromSweep,
 		const FHitResult &SweepResult
@@ -88,10 +78,13 @@ private:
 
 	UFUNCTION()
 	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
+
+	UFUNCTION()
+	bool ActiveTargetIsInAttackRange();
 	
 	UFUNCTION(CallInEditor)
 	void Configure();
 
 	UFUNCTION()
-	void SetupEnemyBasedOnSelectedCharacter();
+	void SetupEnemyBasedOnSelectedCharacter(class ULR_GameInstance* gameInstance);
 };

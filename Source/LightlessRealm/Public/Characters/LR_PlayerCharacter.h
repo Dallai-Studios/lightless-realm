@@ -12,11 +12,11 @@ class LIGHTLESSREALM_API ALR_PlayerCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
+	// =========================================
+	// Components
+	// =========================================
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<class UAbilitySystemComponent> abilitySystemComponent;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Data and Events")
-	TObjectPtr<class ULR_GameEventsPDA> gameEvents;
 	
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class USpringArmComponent> springArmComponent;
@@ -30,15 +30,22 @@ public:
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class USpotLightComponent> innerLight;
 
-	UPROPERTY(EditAnywhere, Category="Player Character")
+
+
+	// =========================================
+	// Data e Eventos
+	// =========================================
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Data and Events")
+	TObjectPtr<class ULR_GameEventsPDA> gameEvents;
+
+	UPROPERTY(EditAnywhere, Category="Data and Events")
 	class ULR_PlayerCharacterPDA* selectedCharacter;
 
-	UPROPERTY(EditAnywhere, Category="Player Character")
-	float defaultInnerLightSize = 26;
 
-	UPROPERTY(EditAnywhere, Category="Player Character")
-	float doubleInnerLightSize = 38;
 	
+	// =========================================
+	// Movimento do Player
+	// =========================================
 	UPROPERTY(EditAnywhere, Category="Player Movement")
 	float movementSpeed;
 
@@ -51,34 +58,66 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Player Movement")
 	float floorDetectionRaySize;
 
-	UPROPERTY(EditAnywhere, Category="Player Attack")
-	float meleeAttackRange;
-
-protected:
 	UPROPERTY(BlueprintReadWrite, Category="Player Movement")
 	bool playerCanReceiveMovementInput = true;
 
+	UPROPERTY(BlueprintReadWrite, Category="Player Movement")
+	bool isPlayerPassingTurn = false;
+
+
+
+	// =========================================
+	// Movimento do Player
+	// =========================================
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	float meleeAttackRange;
+	
 	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
 	bool playerCanReceiveAttackInput = true;
 
 	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
 	bool playerCanPerformAttackAnimation = true;
 
-	UPROPERTY(BlueprintReadWrite, Category="Player Inputs")
-	bool isPlayerPassingTurn = false;
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	TObjectPtr<class UCurveVector> attackUpAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	TObjectPtr<UCurveVector> attackRightAnimationCurve;
+
 	
-private:
-	bool canMove = true;
+
+	// =========================================
+	// Valores Auxiliares
+	// =========================================
+	UPROPERTY(EditAnywhere, Category="Player Values")
+	float defaultInnerLightSize = 26;
+
+	UPROPERTY(EditAnywhere, Category="Player Values")
+	float doubleInnerLightSize = 38;
+	
+
+	
+	// =========================================
+	// Variavei de Controle
+	// =========================================
 	FVector destinationLocation;
 	ELRPlayerMovementDirection currentMovementDirection;
 	ELRPlayerAttackDirection currentAttackDirection;
 	
+	
 public:
+	// =================================================
+	// Metodos de Life Cycle:
+	// =================================================
 	ALR_PlayerCharacter();
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay() override;
 
+
+
+	// =================================================
+	// Metodos de Movimento do Player:
+	// =================================================
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
 	void MoveUp();
 
@@ -91,6 +130,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
 	void MoveRight();
 
+	void MoveTowardsDestinyLocation();
+	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
+
+
+
+	// =================================================
+	// Metodos de Ataque do Player:
+	// =================================================
 	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AttackUp();
 
@@ -106,9 +153,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AnimateAttack(float flipbookMovementAmount);
 
-private:
-	void ConfigureCharacter();
-	void MoveCharacter(float deltaTime);
-	bool CheckForPathBlock(ELRPlayerMovementDirection direction);
 	bool CheckForAttackableEntity(ELRPlayerAttackDirection AttackDirection);
+
+
+	
+	// =================================================
+	// Metodos de Configuração do Player:
+	// =================================================
+	void ConfigureCharacter();
+
+private:
+	void MoveCharacter(float deltaTime);
 };
