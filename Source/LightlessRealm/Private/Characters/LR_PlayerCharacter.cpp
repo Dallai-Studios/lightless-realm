@@ -1,5 +1,4 @@
 #include "Characters/LR_PlayerCharacter.h"
-
 #include "Camera/CameraComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "Components/SpotLightComponent.h"
@@ -10,6 +9,7 @@
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "AbilitySystemComponent.h"
+
 
 
 // =================================================
@@ -34,7 +34,6 @@ ALR_PlayerCharacter::ALR_PlayerCharacter()
 	this->abilitySystemComponent = this->CreateDefaultSubobject<UAbilitySystemComponent>("Ability System");
 }
 
-
 void ALR_PlayerCharacter::BeginPlay() {
 	Super::BeginPlay();
 
@@ -48,7 +47,6 @@ void ALR_PlayerCharacter::BeginPlay() {
 	
 	this->destinationLocation = this->GetActorLocation();
 }
-
 
 void ALR_PlayerCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
@@ -76,34 +74,64 @@ void ALR_PlayerCharacter::MoveDown() {
 	this->destinationLocation = this->GetActorForwardVector() * this->movementSize * -1;
 }
 
-void ALR_PlayerCharacter::MoveLeft() {
-	if (!this->playerCanReceiveMovementInput) return;
-	
-	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X < 0) flippedScale.X *= -1;
-	this->flipbookComponent->SetRelativeScale3D(flippedScale);
-
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-	
-	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
-	
-	this->currentMovementDirection = ELRPlayerMovementDirection::DIRECTION_LEFT;
-	FVector currentLocation = this->GetActorLocation();
-	this->destinationLocation = FVector(currentLocation.X, currentLocation.Y + (this->movementSize * -1), currentLocation.Z);
-}
-
 void ALR_PlayerCharacter::MoveRight() {
 	if (!this->playerCanReceiveMovementInput) return;
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	
 	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
 	if (flippedScale.X > 0) flippedScale.X *= -1;
 	this->flipbookComponent->SetRelativeScale3D(flippedScale);
 
 	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
 	
-	this->currentMovementDirection = ELRPlayerMovementDirection::DIRECTION_RIGHT;
-	FVector currentLocation = this->GetActorLocation();
-	this->destinationLocation = FVector(currentLocation.X, currentLocation.Y + this->movementSize, currentLocation.Z);
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	
+	this->destinationLocation = this->GetActorRightVector() * this->movementSize;
+}
+
+void ALR_PlayerCharacter::MoveLeft() {
+	if (!this->playerCanReceiveMovementInput) return;
+	
+	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+	if (flippedScale.X > 0) flippedScale.X *= -1;
+	this->flipbookComponent->SetRelativeScale3D(flippedScale);
+
+	if (this->CheckForPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
+	
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	
+	this->destinationLocation = this->GetActorRightVector() * this->movementSize * -1;
+}
+
+void ALR_PlayerCharacter::MoveTowardsDestinyLocation() {
+	auto currentPosition = this->GetActorLocation();
+
+	if (FVector::Dist(currentPosition, this->destinationLocation) < 1.0f) {
+		this->SetActorLocation(this->destinationLocation);
+		return;
+	}
+
+	auto newPosition = FMath::VInterpConstantTo(currentPosition, this->destinationLocation, this->GetWorld()->GetDeltaSeconds(), this->movementSpeed);
+	this->SetActorLocation(newPosition);
+}
+
+bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction) {
+	auto lineStart = this->GetActorLocation();
+	FHitResult hitResult;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	
+	FVector lineEnd;
+	
+	if (direction == ELRPlayerMovementDirection::DIRECTION_UP) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize);
+	if (direction == ELRPlayerMovementDirection::DIRECTION_DOWN) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize * -1);
+	if (direction == ELRPlayerMovementDirection::DIRECTION_RIGHT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize);
+	if (direction == ELRPlayerMovementDirection::DIRECTION_LEFT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize * -1);
+	
+	this->GetWorld()->LineTraceSingleByChannel(hitResult, lineStart, lineEnd, ECC_Visibility, params);
+	
+	DrawDebugLine(this->GetWorld(), lineStart, lineEnd, hitResult.IsValidBlockingHit() ? FColor::Green : FColor::Red, false, 10);
+	
+	return hitResult.IsValidBlockingHit();
 }
 
 
@@ -117,13 +145,11 @@ void ALR_PlayerCharacter::AttackUp() {
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
-
 void ALR_PlayerCharacter::AttackDown() {
 	if (!this->playerCanReceiveAttackInput) return;
 	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_DOWN;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
-
 
 void ALR_PlayerCharacter::AttackLeft() {
 	if (!this->playerCanReceiveAttackInput) return;
@@ -136,7 +162,6 @@ void ALR_PlayerCharacter::AttackLeft() {
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
-
 void ALR_PlayerCharacter::AttackRight() {
 	if (!this->playerCanReceiveAttackInput) return;
 	
@@ -147,7 +172,6 @@ void ALR_PlayerCharacter::AttackRight() {
 	this->currentAttackDirection = ELRPlayerAttackDirection::ATTACK_RIGHT;
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
-
 
 void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
 	auto newPosition = this->flipbookComponent->GetRelativeLocation();
@@ -171,20 +195,31 @@ void ALR_PlayerCharacter::AnimateAttack(float flipbookMovementAmount) {
 	this->flipbookComponent->SetRelativeLocation(newPosition);
 }
 
-
-void ALR_PlayerCharacter::MoveTowardsDestinyLocation() {
-	auto currentPosition = this->GetActorLocation();
-
-	if (FVector::Dist(currentPosition, this->destinationLocation) < 1.0f) {
-		this->SetActorLocation(this->destinationLocation);
-		return;
-	}
-
-	auto newPosition = FMath::VInterpConstantTo(currentPosition, this->destinationLocation, this->GetWorld()->GetDeltaSeconds(), this->movementSpeed);
-	this->SetActorLocation(newPosition);
+bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {
+	auto lineStart = this->GetActorLocation();
+	FHitResult hitResult;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	
+	FVector lineEnd;
+	
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_UP) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize);
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize * -1);
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize);
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize * -1);
+	
+	this->GetWorld()->LineTraceSingleByChannel(hitResult, lineStart, lineEnd, ECC_Visibility, params);
+	
+	DrawDebugLine(this->GetWorld(), lineStart, lineEnd, hitResult.IsValidBlockingHit() ? FColor::Green : FColor::Red, false, 10);
+	
+	return hitResult.IsValidBlockingHit();
 }
 
 
+
+// =================================================
+// Metodos de Configuração do Player:
+// =================================================
 void ALR_PlayerCharacter::ConfigureCharacter() {
 	check(this->selectedCharacter);
 
@@ -204,51 +239,11 @@ void ALR_PlayerCharacter::ConfigureCharacter() {
 }
 
 
+
+// talvez não use mais
 void ALR_PlayerCharacter::MoveCharacter(float deltaTime) {
 	if (!this->canMove) return;
 	if (this->destinationLocation == this->GetActorLocation()) return;
 	FVector newLocation = FMath::LerpStable(this->GetActorLocation(), this->destinationLocation, deltaTime * this->movementSpeed);
 	this->SetActorLocation(newLocation);
-}
-
-
-bool ALR_PlayerCharacter::CheckForPathBlock(ELRPlayerMovementDirection direction) {
-	auto lineStart = this->GetActorLocation();
-	FHitResult hitResult;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-	
-	FVector lineEnd;
-	
-	if (direction == ELRPlayerMovementDirection::DIRECTION_UP) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize);
-	if (direction == ELRPlayerMovementDirection::DIRECTION_DOWN) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize * -1);
-	if (direction == ELRPlayerMovementDirection::DIRECTION_RIGHT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize);
-	if (direction == ELRPlayerMovementDirection::DIRECTION_LEFT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize * -1);
-	
-	this->GetWorld()->LineTraceSingleByChannel(hitResult, lineStart, lineEnd, ECC_Visibility, params);
-	
-	DrawDebugLine(this->GetWorld(), lineStart, lineEnd, hitResult.IsValidBlockingHit() ? FColor::Green : FColor::Red, false, 10);
-	
-	return hitResult.IsValidBlockingHit();
-}
-
-
-bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {
-	auto lineStart = this->GetActorLocation();
-	FHitResult hitResult;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-	
-	FVector lineEnd;
-	
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_UP) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize);
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) lineEnd = lineStart + (this->GetActorForwardVector() * this->movementSize * -1);
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize);
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) lineEnd = lineStart + (this->GetActorRightVector() * this->movementSize * -1);
-	
-	this->GetWorld()->LineTraceSingleByChannel(hitResult, lineStart, lineEnd, ECC_Visibility, params);
-	
-	DrawDebugLine(this->GetWorld(), lineStart, lineEnd, hitResult.IsValidBlockingHit() ? FColor::Green : FColor::Red, false, 10);
-	
-	return hitResult.IsValidBlockingHit();
 }
