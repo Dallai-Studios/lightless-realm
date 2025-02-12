@@ -173,6 +173,7 @@ void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
 	}
 	
 	this->playerCanReceiveAttackInput = false;
+	this->playerCanReceiveMovementInput = false;
 
 	this->AnimateAttack(attackDirection);
 
@@ -233,6 +234,7 @@ void ALR_PlayerCharacter::StartAttackCooldown() {
 
 void ALR_PlayerCharacter::HandleAttackCoolOff() {
 	this->playerCanReceiveAttackInput = true;
+	this->playerCanReceiveMovementInput = true;
 }
 
 bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {

@@ -19,7 +19,10 @@ public:
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class UPaperFlipbookComponent> flipbookComponent;
 
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class UTimelineComponent> attackTimelineComponent;
 
+	
 
 	// =================================================
 	// Dados e Eventos:
@@ -44,12 +47,27 @@ public:
 	UPROPERTY(EditAnywhere, Category="Enemy Movement")
 	bool canOnlyMoveWithActiveTarget = false;
 
-	FVector destinationLocation;
-	ELRPlayerMovementDirection movementDirection;
+	FVector targetLocation;
+
+
 	
-private:
-	ELRPlayerAttackDirection attackDirection;
+	// =================================================
+	// Ataque do Inimigo:
+	// =================================================
+	UPROPERTY(EditAnywhere, Category="Enemy Attack")
+	TObjectPtr<class UCurveVector> attackUpAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Enemy Attack")
+	TObjectPtr<UCurveVector> attackDownAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Enemy Attack")
+	TObjectPtr<UCurveVector> attackRightAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Enemy Attack")
+	TObjectPtr<UCurveVector> attackLeftAnimationCurve;
+	
 	class AActor* activeTarget;
+	
 	ELRPlayerAttackDirection nextAttackDirection;
 	
 public:
@@ -65,20 +83,13 @@ public:
 	// =================================================
 	// Metodos de Movemento do Inimigo:
 	// =================================================
-	UFUNCTION(BlueprintCallable, Category="Enemy Movement")
-	void MoveUp();
+	UFUNCTION(Category="Enemy Movement")
+	void MoveEnemy(ELRPlayerMovementDirection movementDirection);
 
-	UFUNCTION(BlueprintCallable, Category="Enemy Movement")
-	void MoveDown();
+	UFUNCTION(Category="Enemy Movement")
+	void MoveTowardsTargetLocation();
 
-	UFUNCTION(BlueprintCallable, Category="Enemy, Movement")
-	void MoveLeft();
-
-	UFUNCTION(BlueprintCallable, Category="Enemy, Movement")
-	void MoveRight();
-
-	void MoveTowardsDestinyLocation();
-	
+	UFUNCTION(Category="Enemy Movement")
 	bool HasPathBlock(ELRPlayerMovementDirection direction);
 
 
@@ -86,10 +97,16 @@ public:
 	// =================================================
 	// Metodos de Movemento do Inimigo:
 	// =================================================
-	void AttackUp();
-	void AttackDown();
-	void AttackRight();
-	void AttackLeft();
+	UFUNCTION(Category="Enemy Attack")
+	void Attack(ELRPlayerAttackDirection AttackDirection);
+
+	UFUNCTION(BlueprintCallable, Category="Enemy Attack")
+	void AnimateAttack(ELRPlayerAttackDirection attackDirection);
+
+	UFUNCTION(Category="Enemy Attack")
+	void UpdateAttackAnimation(FVector vectorValue);
+	
+	UFUNCTION(Category="Enemy Attack")
 	bool ActiveTargetIsInAttackRange();
 
 	

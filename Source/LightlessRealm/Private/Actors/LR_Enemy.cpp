@@ -3,6 +3,7 @@
 #include "Characters/LR_PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/TimelineComponent.h"
 #include "Data/LR_EnemyPDA.h"
 #include "Data/LR_GameEventsPDA.h"
 #include "Data/LR_GameInstance.h"
@@ -26,6 +27,8 @@ ALR_Enemy::ALR_Enemy() {
 	if (this->enemyConfig != nullptr) {
 		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
 	}
+
+	this->attackTimelineComponent = this->CreateDefaultSubobject<UTimelineComponent>("Attack Timeline Component");
 }
 
 void ALR_Enemy::BeginPlay() {
@@ -37,7 +40,7 @@ void ALR_Enemy::BeginPlay() {
 
 	if (this->gameEvents) this->gameEvents->OnPlayerPerformAction.AddDynamic(this, &ALR_Enemy::ALR_Enemy::RespondToPlayerAction);
 
-	this->destinationLocation = this->GetActorLocation();
+	this->targetLocation = this->GetActorLocation();
 
 	ULR_GameInstance* gameInstance = Cast<ULR_GameInstance>(this->GetWorld()->GetGameInstance());
 	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter(gameInstance);
@@ -46,7 +49,7 @@ void ALR_Enemy::BeginPlay() {
 void ALR_Enemy::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
-	this->MoveTowardsDestinyLocation();
+	this->MoveTowardsTargetLocation();
 
 	if (IsValid(this->activeTarget)) {
 		DrawDebugLine(this->GetWorld(), this->GetActorLocation(), this->activeTarget->GetActorLocation(), FColor::Orange);
@@ -58,55 +61,51 @@ void ALR_Enemy::Tick(float DeltaTime) {
 // =================================================
 // Metodos de Movemento do Inimigo:
 // =================================================
-void ALR_Enemy::MoveUp() {
-	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
+void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection) {
+	if (this->HasPathBlock(movementDirection)) return;
+
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X > 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
 	
-	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_UP)) return;
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_LEFT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X < 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
 	
-	this->destinationLocation = this->GetActorLocation() + this->GetActorForwardVector() * this->movementSize;
-}
-
-void ALR_Enemy::MoveDown() {
-	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
-	
-	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_DOWN)) return;
-	
-	this->destinationLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
-}
-
-void ALR_Enemy::MoveLeft() {
-	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
-	
-	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_LEFT)) return;
-
-	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X < 0) flippedScale.X *= -1;
-	this->flipbookComponent->SetRelativeScale3D(flippedScale);
-	
-	this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
-}
-
-void ALR_Enemy::MoveRight() {
-	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
-
-	if (this->HasPathBlock(ELRPlayerMovementDirection::DIRECTION_RIGHT)) return;
-
-	FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
-	if (flippedScale.X > 0) flippedScale.X *= -1;
-	this->flipbookComponent->SetRelativeScale3D(flippedScale);
-	
-	this->destinationLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
-}
-
-void ALR_Enemy::MoveTowardsDestinyLocation() {
-	auto currentPosition = this->GetActorLocation();
-
-	if (FVector::Dist(currentPosition, this->destinationLocation) < 1.0f) {
-		this->SetActorLocation(this->destinationLocation);
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_UP) {
+		this->targetLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
 		return;
 	}
 
-	auto newPosition = FMath::VInterpConstantTo(currentPosition, this->destinationLocation, this->GetWorld()->GetDeltaSeconds(), this->movementSpeed);
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_DOWN) {
+		this->targetLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
+		return;
+	}
+
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
+		this->targetLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
+		return;
+	}
+
+	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_LEFT) {
+		this->targetLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
+		return;
+	}
+}
+
+void ALR_Enemy::MoveTowardsTargetLocation() {
+	auto currentPosition = this->GetActorLocation();
+
+	if (FVector::Dist(currentPosition, this->targetLocation) < 1.0f) {
+		this->SetActorLocation(this->targetLocation);
+		return;
+	}
+
+	auto newPosition = FMath::VInterpConstantTo(currentPosition, this->targetLocation, this->GetWorld()->GetDeltaSeconds(), this->movementSpeed);
 	this->SetActorLocation(newPosition);
 }
 
@@ -135,13 +134,40 @@ bool ALR_Enemy::HasPathBlock(ELRPlayerMovementDirection direction) {
 // =================================================
 // Metodos de Ataque do Inimigo:
 // =================================================
-void ALR_Enemy::AttackUp() {}
+void ALR_Enemy::Attack(ELRPlayerAttackDirection AttackDirection) { }
 
-void ALR_Enemy::AttackDown() {}
+void ALR_Enemy::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
+	FOnTimelineVector timelineCallback;
+	timelineCallback.BindUFunction(this, FName("UpdateAttackAnimation"));
 
-void ALR_Enemy::AttackRight() {}
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_UP) {
+		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
 
-void ALR_Enemy::AttackLeft() {}
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) {
+		this->attackTimelineComponent->AddInterpVector(this->attackDownAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
+
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
+		this->attackTimelineComponent->AddInterpVector(this->attackRightAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
+
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
+		this->attackTimelineComponent->AddInterpVector(this->attackLeftAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
+}
+
+void ALR_Enemy::UpdateAttackAnimation(FVector vectorValue) {
+	
+}
 
 bool ALR_Enemy::ActiveTargetIsInAttackRange() {
 	auto lineStart = this->GetActorLocation();
@@ -245,19 +271,21 @@ void ALR_Enemy::RespondToPlayerAction() {
 		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Delta X: %d Delta Y: %d"), deltaX, deltaY));
 
 		if (FMath::Abs(deltaX) > FMath::Abs(deltaY)) {
-			if (deltaX > 0) this->MoveUp(); else this->MoveDown();
+			if (deltaX > 0) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_UP);
+			else this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_DOWN);
 		} else {
-			if (deltaY > 0) this->MoveRight(); else this->MoveLeft();
+			if (deltaY > 0) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_RIGHT);
+			else this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_LEFT);
 		}
 		
 		return;
 	}
 	
 	auto randomDirection = FMath::RandRange(0, 5);
-	if (randomDirection == 1) this->MoveUp();
-	if (randomDirection == 2) this->MoveDown();
-	if (randomDirection == 3) this->MoveLeft();
-	if (randomDirection == 4) this->MoveRight();
+	if (randomDirection == 1) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_UP);
+	if (randomDirection == 2) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_DOWN);
+	if (randomDirection == 3) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_LEFT);
+	if (randomDirection == 4) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_RIGHT);
 	if (randomDirection == 0 || randomDirection == 5) return;
 }
 
