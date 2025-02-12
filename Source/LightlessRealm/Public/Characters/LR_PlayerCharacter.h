@@ -78,9 +78,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
 	bool playerCanReceiveAttackInput = true;
-
-	UPROPERTY(BlueprintReadWrite, Category="Player Attack")
-	bool playerCanPerformAttackAnimation = true;
+	
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	float attackCooldownTime;
 
 	UPROPERTY(EditAnywhere, Category="Player Attack")
 	TObjectPtr<class UCurveVector> attackUpAnimationCurve;
@@ -94,7 +94,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Player Attack")
 	TObjectPtr<UCurveVector> attackLeftAnimationCurve;
 
-	FTimerHandle AttackCoolDownTimerHandle;
+	FTimerHandle attackCoolDownTimerHandle;
 
 	
 
@@ -133,9 +133,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Player Movement")
 	void MovePlayer(ELRPlayerMovementDirection movementDirection);
 
+	UFUNCTION(Category="Player Movement")
 	void MoveTowardsTargetLocation();
+
+	UFUNCTION(Category="Player Movement")
 	bool HasPathBlock(ELRPlayerMovementDirection direction);
+
+	UFUNCTION(Category="Player Movement")
 	void StartMovementCoolDown();
+
+	UFUNCTION(Category="Player Movement")
 	void HandleMovementEffects();
 
 
@@ -155,6 +162,13 @@ public:
 	UFUNCTION(Category="Player Attack")
 	void FinishAttackAnimation();
 
+	UFUNCTION(Category="Player Attack")
+	void StartAttackCooldown();
+
+	UFUNCTION(Category="Player Attack")
+	void HandleAttackCoolOff();
+
+	UFUNCTION(Category="Player Attack")
 	bool CheckForAttackableEntity(ELRPlayerAttackDirection AttackDirection);
 
 
@@ -162,5 +176,6 @@ public:
 	// =================================================
 	// Metodos de Configuração do Player:
 	// =================================================
+	UFUNCTION(Category="Player Config")
 	void ConfigureCharacter();
 };

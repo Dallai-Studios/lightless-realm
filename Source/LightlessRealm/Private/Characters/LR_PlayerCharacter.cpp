@@ -153,17 +153,30 @@ void ALR_PlayerCharacter::HandleMovementEffects() {
 }
 
 
+
 // =================================================
 // Metodos de Ataque do Player:
 // =================================================
 void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
 	if (!this->playerCanReceiveAttackInput) return;
 
-	this->currentAttackDirection = attackDirection;
-
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X > 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
+	
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X < 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
+	
 	this->playerCanReceiveAttackInput = false;
 
 	this->AnimateAttack(attackDirection);
+
+	this->StartAttackCooldown();
 }
 
 void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
@@ -182,32 +195,44 @@ void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection
 	}
 
 	if (attackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) {
-		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->AddInterpVector(this->attackDownAnimationCurve, timelineCallback);
 		this->attackTimelineComponent->PlayFromStart();
 		return;
 	}
 
 	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
-		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->AddInterpVector(this->attackRightAnimationCurve, timelineCallback);
 		this->attackTimelineComponent->PlayFromStart();
 		return;
 	}
 
 	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
-		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->AddInterpVector(this->attackLeftAnimationCurve, timelineCallback);
 		this->attackTimelineComponent->PlayFromStart();
 		return;
 	}
 }
 
 void ALR_PlayerCharacter::UpdateAttackAnimation(FVector vectorValue) {
-	
+	this->flipbookComponent->SetRelativeLocation(vectorValue);
 }
 
 void ALR_PlayerCharacter::FinishAttackAnimation() {
-	
-
+	this->flipbookComponent->SetRelativeLocation(FVector(0, 0 , 0));
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+}
+
+void ALR_PlayerCharacter::StartAttackCooldown() {
+	this->GetWorld()->GetTimerManager().SetTimer(
+		this->attackCoolDownTimerHandle,
+		this,
+		&ALR_PlayerCharacter::HandleAttackCoolOff,
+		this->attackCooldownTime
+	);
+}
+
+void ALR_PlayerCharacter::HandleAttackCoolOff() {
+	this->playerCanReceiveAttackInput = true;
 }
 
 bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {
