@@ -78,6 +78,7 @@ public:
 	void MoveRight();
 
 	void MoveTowardsDestinyLocation();
+	
 	bool HasPathBlock(ELRPlayerMovementDirection direction);
 
 
