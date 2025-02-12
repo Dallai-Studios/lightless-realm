@@ -9,6 +9,7 @@
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "AbilitySystemComponent.h"
+#include "Components/TimelineComponent.h"
 #include "Tools/LR_Utils.h"
 
 
@@ -32,6 +33,8 @@ ALR_PlayerCharacter::ALR_PlayerCharacter()
 	this->innerLight->SetupAttachment(this->RootComponent);
 
 	this->abilitySystemComponent = this->CreateDefaultSubobject<UAbilitySystemComponent>("Ability System");
+
+	this->attackTimelineComponent = this->CreateDefaultSubobject<UTimelineComponent>("Attack Animation Timeline");
 }
 
 void ALR_PlayerCharacter::BeginPlay() {
@@ -164,7 +167,37 @@ void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
 }
 
 void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
+	FOnTimelineVector timelineCallback;
+	timelineCallback.BindUFunction(this, FName("UpdateAttackAnimation"));
+
+	FOnTimelineEvent timelineFinishCallback;
+	timelineFinishCallback.BindUFunction(this, FName("FinishAttackAnimation"));
+
+	this->attackTimelineComponent->SetTimelineFinishedFunc(timelineFinishCallback);
 	
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_UP) {
+		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
+
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) {
+		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
+
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
+		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
+
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
+		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
+		this->attackTimelineComponent->PlayFromStart();
+		return;
+	}
 }
 
 bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {

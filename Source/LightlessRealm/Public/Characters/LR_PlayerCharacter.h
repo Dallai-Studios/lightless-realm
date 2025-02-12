@@ -30,6 +30,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class USpotLightComponent> innerLight;
 
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class UTimelineComponent> attackTimelineComponent;	
+
 
 
 	// =========================================
@@ -84,7 +87,13 @@ public:
 	TObjectPtr<class UCurveVector> attackUpAnimationCurve;
 
 	UPROPERTY(EditAnywhere, Category="Player Attack")
+	TObjectPtr<UCurveVector> attackDownAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Player Attack")
 	TObjectPtr<UCurveVector> attackRightAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	TObjectPtr<UCurveVector> attackLeftAnimationCurve;
 
 	FTimerHandle AttackCoolDownTimerHandle;
 
@@ -140,6 +149,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Player Attack")
 	void AnimateAttack(ELRPlayerAttackDirection attackDirection);
+
+	UFUNCTION(Category="Player Attack")
+	void UpdateAttackAnimation(FVector vectorValue);
+
+	UFUNCTION(Category="Player Attack")
+	void FinishAttackAnimation();
 
 	bool CheckForAttackableEntity(ELRPlayerAttackDirection AttackDirection);
 
