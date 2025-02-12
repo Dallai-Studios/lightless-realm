@@ -161,9 +161,9 @@ void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
 
 	this->currentAttackDirection = attackDirection;
 
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-
 	this->playerCanReceiveAttackInput = false;
+
+	this->AnimateAttack(attackDirection);
 }
 
 void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
@@ -198,6 +198,16 @@ void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection
 		this->attackTimelineComponent->PlayFromStart();
 		return;
 	}
+}
+
+void ALR_PlayerCharacter::UpdateAttackAnimation(FVector vectorValue) {
+	
+}
+
+void ALR_PlayerCharacter::FinishAttackAnimation() {
+	
+
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 }
 
 bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection attackDirection) {

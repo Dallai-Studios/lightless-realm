@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CoreMinimal.h"
 #include "Enums/ELRPlayerAttackDirection.h"
 #include "Enums/ELRPlayerMovementDirection.h"
