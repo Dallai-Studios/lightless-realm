@@ -11,6 +11,7 @@
 #include "AbilitySystemComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Tools/LR_Utils.h"
+#include "Camera/CameraShakeBase.h"
 
 
 // =================================================
@@ -151,7 +152,7 @@ void ALR_PlayerCharacter::HandleMovementEffects() {
 	this->playerCanReceiveMovementInput = true;
 	this->playerCanReceiveAttackInput = true;
 
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast(this->GetActorLocation());
 	// todo criar um actor component que toca a os efeitos de audio depois que isso foi executado;
 }
 
@@ -181,6 +182,10 @@ void ALR_PlayerCharacter::Attack(ELRPlayerAttackDirection attackDirection) {
 	this->AnimateAttack(attackDirection);
 
 	this->StartAttackCooldown();
+
+	if (this->baseAttackCameraShake) {
+		this->GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(this->baseAttackCameraShake);
+	}
 }
 
 void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
@@ -223,7 +228,7 @@ void ALR_PlayerCharacter::UpdateAttackAnimation(FVector vectorValue) {
 
 void ALR_PlayerCharacter::FinishAttackAnimation() {
 	this->flipbookComponent->SetRelativeLocation(FVector(0, 0 , 0));
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast(FVector::Zero());
 }
 
 void ALR_PlayerCharacter::StartAttackCooldown() {

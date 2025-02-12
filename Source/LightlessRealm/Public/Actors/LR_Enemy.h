@@ -86,7 +86,7 @@ public:
 	// Metodos de Movemento do Inimigo:
 	// =================================================
 	UFUNCTION(Category="Enemy Movement")
-	void MoveEnemy(ELRPlayerMovementDirection movementDirection);
+	void MoveEnemy(ELRPlayerMovementDirection movementDirection, FVector playerNextLocation = FVector::Zero());
 
 	UFUNCTION(Category="Enemy Movement")
 	void MoveTowardsTargetLocation();
@@ -120,7 +120,7 @@ public:
 	// Event Listeners:
 	// =================================================
 	UFUNCTION(BlueprintCallable, Category="Event Listeners")
-	void RespondToPlayerAction();
+	void RespondToPlayerAction(FVector playerNextLocation);
 
 	UFUNCTION(BlueprintCallable)
 	void CheckForTarget(AActor* otherActor);

@@ -94,6 +94,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Player Attack")
 	TObjectPtr<UCurveVector> attackLeftAnimationCurve;
 
+	UPROPERTY(EditAnywhere, Category="Player Attack")
+	TSubclassOf<class UCameraShakeBase> baseAttackCameraShake;
+	
 	FTimerHandle attackCoolDownTimerHandle;
 
 	

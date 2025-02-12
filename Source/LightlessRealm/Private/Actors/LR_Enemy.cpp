@@ -61,7 +61,7 @@ void ALR_Enemy::Tick(float DeltaTime) {
 // =================================================
 // Metodos de Movemento do Inimigo:
 // =================================================
-void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection) {
+void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection, FVector playerNextLocation) {
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	
 	if (this->HasPathBlock(movementDirection)) return;
@@ -79,22 +79,30 @@ void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection) {
 	}
 	
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_UP) {
-		this->targetLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
+		FVector calculatedNextLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
+		if (calculatedNextLocation == playerNextLocation) return;
+		this->targetLocation = calculatedNextLocation;
 		return;
 	}
 
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_DOWN) {
-		this->targetLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
+		FVector calculatedNextLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize * -1);
+		if (calculatedNextLocation == playerNextLocation) return;
+		this->targetLocation = calculatedNextLocation;
 		return;
 	}
 
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
-		this->targetLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
+		FVector calculatedNextLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize);
+		if (calculatedNextLocation == playerNextLocation) return;
+		this->targetLocation = calculatedNextLocation;
 		return;
 	}
 
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_LEFT) {
-		this->targetLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
+		FVector calculatedNextLocation = this->GetActorLocation() + (this->GetActorRightVector() * this->movementSize * -1);
+		if (calculatedNextLocation == playerNextLocation) return;
+		this->targetLocation = calculatedNextLocation;
 		return;
 	}
 }
@@ -263,7 +271,7 @@ bool ALR_Enemy::ActiveTargetIsInAttackRange() {
 // =================================================
 // Event Listeners:
 // =================================================
-void ALR_Enemy::RespondToPlayerAction() {
+void ALR_Enemy::RespondToPlayerAction(FVector playerNextLocation) {
 	if (this->activeTarget) {
 		if (this->ActiveTargetIsInAttackRange()) {
 			this->Attack(this->nextAttackDirection);
@@ -294,11 +302,11 @@ void ALR_Enemy::RespondToPlayerAction() {
 		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Delta X: %d Delta Y: %d"), deltaX, deltaY));
 
 		if (FMath::Abs(deltaX) > FMath::Abs(deltaY)) {
-			if (deltaX > 0) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_UP);
-			else this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_DOWN);
+			if (deltaX > 0) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_UP, playerNextLocation);
+			else this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_DOWN, playerNextLocation);
 		} else {
-			if (deltaY > 0) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_RIGHT);
-			else this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_LEFT);
+			if (deltaY > 0) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_RIGHT, playerNextLocation);
+			else this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_LEFT, playerNextLocation);
 		}
 		
 		return;
