@@ -51,9 +51,9 @@ void ALR_Enemy::Tick(float DeltaTime) {
 
 	this->MoveTowardsTargetLocation();
 
-	if (IsValid(this->activeTarget)) {
-		DrawDebugLine(this->GetWorld(), this->GetActorLocation(), this->activeTarget->GetActorLocation(), FColor::Orange);
-	}
+	// if (IsValid(this->activeTarget)) {
+	// 	DrawDebugLine(this->GetWorld(), this->GetActorLocation(), this->activeTarget->GetActorLocation(), FColor::Orange);
+	// }
 }
 
 
@@ -62,6 +62,8 @@ void ALR_Enemy::Tick(float DeltaTime) {
 // Metodos de Movemento do Inimigo:
 // =================================================
 void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection) {
+	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
+	
 	if (this->HasPathBlock(movementDirection)) return;
 
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
@@ -194,66 +196,66 @@ void ALR_Enemy::FinishAttackAnimation() {
 
 bool ALR_Enemy::ActiveTargetIsInAttackRange() {
 	auto lineStart = this->GetActorLocation();
-	auto lineEndUp = lineStart + (this->GetActorForwardVector() * this->movementSize);
-	auto lineEndDown = lineStart + (this->GetActorForwardVector() * -1 * this->movementSize);
-	auto lineEndRight = lineStart + (this->GetActorRightVector() * this->movementSize);
-	auto lineEndLeft = lineStart + (this->GetActorRightVector() * -1 * this->movementSize);
+    auto lineEndUp = lineStart + (this->GetActorForwardVector() * this->movementSize);
+    auto lineEndDown = lineStart + (this->GetActorForwardVector() * -1 * this->movementSize);
+    auto lineEndRight = lineStart + (this->GetActorRightVector() * this->movementSize);
+    auto lineEndLeft = lineStart + (this->GetActorRightVector() * -1 * this->movementSize);
 
-	FHitResult hitResultUp;
-	FHitResult hitResultDown;
-	FHitResult hitResultRight;
-	FHitResult hitResultLeft;
-	
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
+    FHitResult hitResultUp;
+    FHitResult hitResultDown;
+    FHitResult hitResultRight;
+    FHitResult hitResultLeft;
+    
+    FCollisionQueryParams params;
+    params.AddIgnoredActor(this);
 
-	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndUp, ECC_Visibility, params);
-	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndDown, ECC_Visibility, params);
-	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndRight, ECC_Visibility, params);
-	this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndLeft, ECC_Visibility, params);
+    // Corrigido: Cada Line Trace agora usa seu respectivo FHitResult
+    this->GetWorld()->LineTraceSingleByChannel(hitResultUp, lineStart, lineEndUp, ECC_Pawn, params);
+    this->GetWorld()->LineTraceSingleByChannel(hitResultDown, lineStart, lineEndDown, ECC_Pawn, params);
+    this->GetWorld()->LineTraceSingleByChannel(hitResultRight, lineStart, lineEndRight, ECC_Pawn, params);
+    this->GetWorld()->LineTraceSingleByChannel(hitResultLeft, lineStart, lineEndLeft, ECC_Pawn, params);
 
-	DrawDebugLine(this->GetWorld(), lineStart, lineEndUp, hitResultUp.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
-	DrawDebugLine(this->GetWorld(), lineStart, lineEndDown, hitResultDown.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
-	DrawDebugLine(this->GetWorld(), lineStart, lineEndRight, hitResultRight.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
-	DrawDebugLine(this->GetWorld(), lineStart, lineEndLeft, hitResultLeft.IsValidBlockingHit() ? FColor::Green : FColor::Cyan, false, 10);
+    // Desenho das linhas de debug
+    DrawDebugLine(this->GetWorld(), lineStart, lineEndUp, hitResultUp.bBlockingHit ? FColor::Green : FColor::Cyan, false, 10);
+    DrawDebugLine(this->GetWorld(), lineStart, lineEndDown, hitResultDown.bBlockingHit ? FColor::Green : FColor::Cyan, false, 10);
+    DrawDebugLine(this->GetWorld(), lineStart, lineEndRight, hitResultRight.bBlockingHit ? FColor::Green : FColor::Cyan, false, 10);
+    DrawDebugLine(this->GetWorld(), lineStart, lineEndLeft, hitResultLeft.bBlockingHit ? FColor::Green : FColor::Cyan, false, 10);
 
-	if (!hitResultUp.IsValidBlockingHit() && !hitResultDown.IsValidBlockingHit() && !hitResultRight.IsValidBlockingHit() && !hitResultLeft.IsValidBlockingHit()) {
-		return false;
-	}
-	
-	if (hitResultUp.IsValidBlockingHit()) {
-		auto player = Cast<ALR_PlayerCharacter>(hitResultUp.GetActor());
-		if (IsValid(player)) {
-			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_UP;
-			return true;
-		}
-	}
+    // Verificação para cada direção
+    if (hitResultUp.bBlockingHit) {
+        auto player = Cast<ALR_PlayerCharacter>(hitResultUp.GetActor());
+        if (IsValid(player)) {
+            this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_UP;
+            return true;
+        }
+    }
 
-	if (hitResultDown.IsValidBlockingHit()) {
-		auto player = Cast<ALR_PlayerCharacter>(hitResultDown.GetActor());
-		if (IsValid(player)) {
-			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_DOWN;
-			return true;
-		}
-	}
-	
-	if (hitResultRight.IsValidBlockingHit()) {
-		auto player = Cast<ALR_PlayerCharacter>(hitResultRight.GetActor());
-		if (IsValid(player)) {
-			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_RIGHT;
-			return true;
-		}
-	}
+    if (hitResultDown.bBlockingHit) {
+        auto player = Cast<ALR_PlayerCharacter>(hitResultDown.GetActor());
+        if (IsValid(player)) {
+            this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_DOWN;
+            return true;
+        }
+    }
+    
+    if (hitResultRight.bBlockingHit) {
+        auto player = Cast<ALR_PlayerCharacter>(hitResultRight.GetActor());
+        if (IsValid(player)) {
+            this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_RIGHT;
+            return true;
+        }
+    }
 
-	if (hitResultLeft.IsValidBlockingHit()) {
-		auto player = Cast<ALR_PlayerCharacter>(hitResultUp.GetActor());
-		if (IsValid(player)) {
-			this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_LEFT;
-			return true;
-		}
-	}
-	
-	return false;
+    if (hitResultLeft.bBlockingHit) {
+        // Corrigido: Usando hitResultLeft corretamente
+        auto player = Cast<ALR_PlayerCharacter>(hitResultLeft.GetActor());
+        if (IsValid(player)) {
+            this->nextAttackDirection = ELRPlayerAttackDirection::ATTACK_LEFT;
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 

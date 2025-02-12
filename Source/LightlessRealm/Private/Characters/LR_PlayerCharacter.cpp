@@ -78,9 +78,8 @@ void ALR_PlayerCharacter::MovePlayer(ELRPlayerMovementDirection movementDirectio
 	
 	if (this->HasPathBlock(movementDirection)) return;
 
-	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
-
 	this->playerCanReceiveMovementInput = false;
+	this->playerCanReceiveAttackInput = false;
 
 	this->StartMovementCoolDown();
 	
@@ -148,7 +147,11 @@ void ALR_PlayerCharacter::StartMovementCoolDown() {
 
 void ALR_PlayerCharacter::HandleMovementEffects() {
 	this->GetWorld()->GetTimerManager().ClearTimer(this->movementCoolDownTimeHandle);
+
 	this->playerCanReceiveMovementInput = true;
+	this->playerCanReceiveAttackInput = true;
+
+	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast();
 	// todo criar um actor component que toca a os efeitos de audio depois que isso foi executado;
 }
 
