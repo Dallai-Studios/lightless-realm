@@ -67,8 +67,10 @@ public:
 	TObjectPtr<UCurveVector> attackLeftAnimationCurve;
 	
 	class AActor* activeTarget;
-	
+
 	ELRPlayerAttackDirection nextAttackDirection;
+
+
 	
 public:
 	// =================================================
@@ -98,13 +100,16 @@ public:
 	// Metodos de Movemento do Inimigo:
 	// =================================================
 	UFUNCTION(Category="Enemy Attack")
-	void Attack(ELRPlayerAttackDirection AttackDirection);
+	void Attack(ELRPlayerAttackDirection attackDirection);
 
 	UFUNCTION(BlueprintCallable, Category="Enemy Attack")
 	void AnimateAttack(ELRPlayerAttackDirection attackDirection);
 
 	UFUNCTION(Category="Enemy Attack")
 	void UpdateAttackAnimation(FVector vectorValue);
+
+	UFUNCTION(Category="Enemy Attack")
+	void FinishAttackAnimation();
 	
 	UFUNCTION(Category="Enemy Attack")
 	bool ActiveTargetIsInAttackRange();

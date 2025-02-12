@@ -134,12 +134,31 @@ bool ALR_Enemy::HasPathBlock(ELRPlayerMovementDirection direction) {
 // =================================================
 // Metodos de Ataque do Inimigo:
 // =================================================
-void ALR_Enemy::Attack(ELRPlayerAttackDirection AttackDirection) { }
+void ALR_Enemy::Attack(ELRPlayerAttackDirection attackDirection) {
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X > 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
+	
+	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
+		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
+		if (flippedScale.X < 0) flippedScale.X *= -1;
+		this->flipbookComponent->SetRelativeScale3D(flippedScale);
+	}
+
+	this->AnimateAttack(attackDirection);
+}
 
 void ALR_Enemy::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
 	FOnTimelineVector timelineCallback;
 	timelineCallback.BindUFunction(this, FName("UpdateAttackAnimation"));
 
+	FOnTimelineEvent timelineFinishCallback;
+	timelineFinishCallback.BindUFunction(this, FName("FinishAttackAnimation"));
+
+	this->attackTimelineComponent->SetTimelineFinishedFunc(timelineFinishCallback);
+	
 	if (attackDirection == ELRPlayerAttackDirection::ATTACK_UP) {
 		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
 		this->attackTimelineComponent->PlayFromStart();
@@ -166,7 +185,11 @@ void ALR_Enemy::AnimateAttack(ELRPlayerAttackDirection attackDirection) {
 }
 
 void ALR_Enemy::UpdateAttackAnimation(FVector vectorValue) {
-	
+	this->flipbookComponent->SetRelativeLocation(vectorValue);
+}
+
+void ALR_Enemy::FinishAttackAnimation() {
+	this->flipbookComponent->SetRelativeLocation(FVector(0, 0 , 0));
 }
 
 bool ALR_Enemy::ActiveTargetIsInAttackRange() {
@@ -239,11 +262,9 @@ bool ALR_Enemy::ActiveTargetIsInAttackRange() {
 // Event Listeners:
 // =================================================
 void ALR_Enemy::RespondToPlayerAction() {
-	// caso tenho um target ativo, a logica é bem mais complicada. Eu vou ter que calcular o caminho mais simples.
-	// mas vou usar só um Breadth First Search simples que resolve o problema. -Renan
 	if (this->activeTarget) {
 		if (this->ActiveTargetIsInAttackRange()) {
-			// this->StartAttackSequence();
+			this->Attack(this->nextAttackDirection);
 			ULR_Utils::ShowDebugMessage(TEXT("Attacking Player"));
 			return;
 		}
@@ -281,7 +302,7 @@ void ALR_Enemy::RespondToPlayerAction() {
 		return;
 	}
 	
-	auto randomDirection = FMath::RandRange(0, 5);
+	int32 randomDirection = FMath::RandRange(0, 5);
 	if (randomDirection == 1) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_UP);
 	if (randomDirection == 2) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_DOWN);
 	if (randomDirection == 3) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_LEFT);
