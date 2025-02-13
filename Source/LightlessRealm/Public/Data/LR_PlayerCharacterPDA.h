@@ -9,6 +9,9 @@ class LIGHTLESSREALM_API ULR_PlayerCharacterPDA : public UPrimaryDataAsset {
 	GENERATED_BODY()
 
 public:
+	// =========================================
+	// Infomações do Personagem
+	// =========================================
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Character Info")
 	FText characterName;
 
@@ -17,7 +20,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Character Info")
 	TObjectPtr<class UPaperFlipbook> characterFlipbook;
+
+
 	
+	// =========================================
+	// Debuffs naturais do Personagem
+	// =========================================
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Debuffs")
 	bool hasNoInnerLight = false;
 
@@ -32,7 +40,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Debuffs")
 	bool cannotEnterOnChurches = false;
-	
+
+
+
+	// =========================================
+	// Passivas naturias do Personagem
+	// =========================================
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Passives")
 	bool doubleInnerLightSize = false;
 
@@ -50,4 +63,38 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Passives")
 	bool canEnterAnyChurch = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Passives")
+	bool doubleDamageOnUndeads = false;
+
+
+
+	// =========================================
+	// Atributos do Personagem
+	// =========================================
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	float health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	float maxHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	float mana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	float maxMana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	int32 attacksPerTurn = 1;
+	
+	
+	
+	// =========================================
+	// Skills do personagem
+	// =========================================
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skills")
+	TObjectPtr<class UGameplayAbility> mainAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skills")
+	TObjectPtr<UGameplayAbility> secondAttack;
 };
