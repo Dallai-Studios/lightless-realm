@@ -51,9 +51,9 @@ void ALR_Enemy::Tick(float DeltaTime) {
 
 	this->MoveTowardsTargetLocation();
 
-	// if (IsValid(this->activeTarget)) {
-	// 	DrawDebugLine(this->GetWorld(), this->GetActorLocation(), this->activeTarget->GetActorLocation(), FColor::Orange);
-	// }
+	if (IsValid(this->activeTarget)) {
+		DrawDebugLine(this->GetWorld(), this->GetActorLocation(), this->activeTarget->GetActorLocation(), FColor::Orange);
+	}
 }
 
 
@@ -334,9 +334,15 @@ void ALR_Enemy::CheckForTarget(AActor* otherActor) {
 // Metodo de Configuração:
 // =================================================
 void ALR_Enemy::Configure() {
-	if (this->enemyConfig) {
-		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
+	if (!this->enemyConfig) {
+		ULR_Utils::ShowDebugMessage("No Enemy config provded for all the enemies on the scene");
+		return;
 	}
+
+	this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);
+	
+	if (this->enemyConfig->isSmall) this->flipbookComponent->SetRelativeScale3D(FVector(1, 1, 1));
+	if (this->enemyConfig->isBoss) this->flipbookComponent->SetRelativeScale3D(FVector(3, 3, 3));
 }
 
 void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter(ULR_GameInstance* gameInstance) {

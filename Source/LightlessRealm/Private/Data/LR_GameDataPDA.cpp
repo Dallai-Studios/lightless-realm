@@ -1,4 +1,1 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Data/LR_GameDataPDA.h"
+﻿#include "Data/LR_GameDataPDA.h"
