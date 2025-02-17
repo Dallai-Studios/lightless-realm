@@ -134,5 +134,5 @@ public:
 	void Configure();
 
 	UFUNCTION()
-	void SetupEnemyBasedOnSelectedCharacter(class ULR_GameInstance* gameInstance);
+	void SetupEnemyBasedOnSelectedCharacter();
 };

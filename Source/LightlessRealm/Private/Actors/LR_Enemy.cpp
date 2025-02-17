@@ -37,13 +37,11 @@ void ALR_Enemy::BeginPlay() {
 	// essa configuração serve só pra ler todas as propriedades do data asset que representa esse inimigo
 	// nenhuma configuração é feita para validar o personagem selecionado pelo jogador. -Renan
 	this->Configure();
-
-	if (this->gameEvents) this->gameEvents->OnPlayerPerformAction.AddDynamic(this, &ALR_Enemy::ALR_Enemy::RespondToPlayerAction);
+	this->SetupEnemyBasedOnSelectedCharacter();
+	
+	if (this->gameEvents) this->gameEvents->OnPlayerPerformAction.AddDynamic(this, &ALR_Enemy::RespondToPlayerAction);
 
 	this->targetLocation = this->GetActorLocation();
-
-	ULR_GameInstance* gameInstance = Cast<ULR_GameInstance>(this->GetWorld()->GetGameInstance());
-	if (gameInstance->gameSelectedCharacter) this->SetupEnemyBasedOnSelectedCharacter(gameInstance);
 }
 
 void ALR_Enemy::Tick(float DeltaTime) {
@@ -345,7 +343,15 @@ void ALR_Enemy::Configure() {
 	if (this->enemyConfig->isBoss) this->flipbookComponent->SetRelativeScale3D(FVector(3, 3, 3));
 }
 
-void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter(ULR_GameInstance* gameInstance) {
-	check(gameInstance);
-	check(gameInstance->gameSelectedCharacter);
+void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter() {
+	ULR_GameInstance* currentGameInstance = CastChecked<ULR_GameInstance>(this->GetWorld()->GetGameInstance());
+
+	if (!currentGameInstance->gameSelectedCharacter) {
+		ULR_Utils::ShowDebugMessage(TEXT("Selected player character is not define on the gameinstance"));
+		return;
+	}
+
+	if (currentGameInstance->gameSelectedCharacter->easyToDetect) {
+		
+	}
 }
