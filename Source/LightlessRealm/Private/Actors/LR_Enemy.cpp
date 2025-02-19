@@ -1,6 +1,7 @@
 ﻿#include "Actors/LR_Enemy.h"
 #include "PaperFlipbookComponent.h"
 #include "Characters/LR_PlayerCharacter.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/TimelineComponent.h"
@@ -23,6 +24,9 @@ ALR_Enemy::ALR_Enemy() {
 
 	this->flipbookComponent = this->CreateDefaultSubobject<UPaperFlipbookComponent>("Flipbook Component");
 	this->flipbookComponent->SetupAttachment(this->collision);
+
+	this->playerDetectionBox = this->CreateDefaultSubobject<UBoxComponent>("Player Detection Box");
+	this->playerDetectionBox->SetupAttachment(this->RootComponent);
 	
 	if (this->enemyConfig != nullptr) {
 		this->flipbookComponent->SetFlipbook(this->enemyConfig->enemyFlipbook);

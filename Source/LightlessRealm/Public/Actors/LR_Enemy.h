@@ -20,6 +20,9 @@ public:
 	TObjectPtr<class UPaperFlipbookComponent> flipbookComponent;
 
 	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class UBoxComponent> playerDetectionBox;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class UTimelineComponent> attackTimelineComponent;
 
 	
