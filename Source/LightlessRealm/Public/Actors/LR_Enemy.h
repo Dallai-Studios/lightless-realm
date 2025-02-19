@@ -68,6 +68,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Enemy Attack")
 	TObjectPtr<UCurveVector> attackLeftAnimationCurve;
+
+	UPROPERTY(EditAnywhere, Category="Enemy Attack")
+	float detectionSize = 100;
+
+	UPROPERTY(EditAnywhere, Category="Enemy Attack")
+	bool isPassive = false;
 	
 	class AActor* activeTarget;
 

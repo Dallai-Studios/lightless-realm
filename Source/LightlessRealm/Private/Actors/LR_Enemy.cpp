@@ -323,7 +323,9 @@ void ALR_Enemy::RespondToPlayerAction(FVector playerNextLocation) {
 }
 
 void ALR_Enemy::CheckForTarget(AActor* otherActor) {
-	ALR_PlayerCharacter* player = Cast<ALR_PlayerCharacter>(otherActor);
+	if (this->isPassive) return;
+	
+	ALR_PlayerCharacter* player = CastChecked<ALR_PlayerCharacter>(otherActor);
 
 	if (IsValid(player)) {
 		this->activeTarget = player;
@@ -355,7 +357,17 @@ void ALR_Enemy::SetupEnemyBasedOnSelectedCharacter() {
 		return;
 	}
 
+	this->playerDetectionBox->SetBoxExtent(FVector(this->detectionSize, this->detectionSize, 0.f));
+	
 	if (currentGameInstance->gameSelectedCharacter->easyToDetect) {
-		
+		this->playerDetectionBox->SetBoxExtent(FVector(this->detectionSize * 2, this->detectionSize * 2, 0.f));
+	}
+
+	if (currentGameInstance->gameSelectedCharacter->hardToDetectOnShadows) {
+		this->playerDetectionBox->SetBoxExtent(FVector(this->detectionSize / 2, this->detectionSize / 2, 0.f));
+	}
+
+	if (currentGameInstance->gameSelectedCharacter->animalsArePassive && this->enemyConfig->enemyType == ELREnemyType::ANIMAL) {
+		this->isPassive = true;
 	}
 }
