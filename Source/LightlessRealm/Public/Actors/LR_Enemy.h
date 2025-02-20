@@ -54,6 +54,7 @@ public:
 	bool canOnlyMoveWithActiveTarget = false;
 
 	FVector targetLocation;
+	FTimerHandle movementDelayTimer;
 
 
 	

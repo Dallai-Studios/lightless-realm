@@ -110,13 +110,15 @@ void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection, FVector 
 		this->targetLocation = calculatedNextLocation;
 		return;
 	}
-
-	FTimerHandle movementDelayTimer;
-	this->GetWorld()->GetTimerManager().SetTimer(movementDelayTimer, this, &ALR_Enemy::PlayFootstepSound, 0.1);
+	
+	this->GetWorld()
+		->GetTimerManager()
+		.SetTimer(this->movementDelayTimer, this, &ALR_Enemy::PlayFootstepSound, 0.1);
 }
 
 void ALR_Enemy::PlayFootstepSound() {
 	this->footstepComponent->PlayFootstepSoundAtActorLocation();
+	this->GetWorld()->GetTimerManager().ClearTimer(this->movementDelayTimer);
 }
 
 void ALR_Enemy::MoveTowardsTargetLocation() {
@@ -297,22 +299,16 @@ void ALR_Enemy::RespondToPlayerAction(FVector playerNextLocation) {
 		// Normalizando para simular um grid sem grid
 		int enemyX = FMath::RoundToInt(enemyPosition.X / this->movementSize);
 		int enemyY = FMath::RoundToInt(enemyPosition.Y / this->movementSize);
-
-		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Enemy Position X: %d Enemy Position Y: %d"), enemyX, enemyY));
 		
 		int playerX = FMath::RoundToInt(playerPosition.X / this->movementSize);
 		int playerY = FMath::RoundToInt(playerPosition.Y / this->movementSize);
-
-		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Player Position X: %d Player Position Y: %d"), playerX, playerY));
-
+		
 		// Esse delta serve pra ver se a direção em X é mais curta que a direção em Y
 		// se o delta for maior na direção X então a direção Y é que vai ser priorizada
 		// independente do caso
 		int deltaX = playerX - enemyX;
 		int deltaY = playerY - enemyY;
-
-		ULR_Utils::ShowDebugMessage(FString::Printf(TEXT("Delta X: %d Delta Y: %d"), deltaX, deltaY));
-
+		
 		if (FMath::Abs(deltaX) > FMath::Abs(deltaY)) {
 			if (deltaX > 0) this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_UP, playerNextLocation);
 			else this->MoveEnemy(ELRPlayerMovementDirection::DIRECTION_DOWN, playerNextLocation);
