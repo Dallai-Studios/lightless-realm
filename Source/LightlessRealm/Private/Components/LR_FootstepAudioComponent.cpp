@@ -1,32 +1,42 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿#include "Components/LR_FootstepAudioComponent.h"
+
+#include "Kismet/GameplayStatics.h"
 
 
-#include "Components/LR_FootstepAudioComponent.h"
-
-
-// Sets default values for this component's properties
+// ======================================================
+// Ciclo de vida:
+// ======================================================
 ULR_FootstepAudioComponent::ULR_FootstepAudioComponent() {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
-
-// Called when the game starts
 void ULR_FootstepAudioComponent::BeginPlay() {
 	Super::BeginPlay();
+}
 
-	// ...
+
+
+// ======================================================
+// Metodos de som de passos:
+// ======================================================
+void ULR_FootstepAudioComponent::PlayFootstepSoundAtActorLocation() {
+	FHitResult groundHit;
+
+	FCollisionQueryParams queryParams;
+	queryParams.bReturnPhysicalMaterial = true;
+	queryParams.AddIgnoredActor(this->GetOwner());
 	
+	auto startVector = this->GetOwner()->GetActorLocation();
+	auto endVector = startVector + (this->GetOwner()->GetActorUpVector() * this->floorDetectionRaySize * -1);
+	
+	this->GetWorld()->LineTraceSingleByChannel(groundHit, startVector, endVector, ECC_Visibility, queryParams);
+
+	DrawDebugLine(this->GetWorld(), startVector, endVector, groundHit.bBlockingHit ? FColor::Emerald : FColor::Cyan, false, 20);
+
+	if (!groundHit.bBlockingHit) return;
+
+	// aqui é meio maluco pq essas definições são feitas na unreal. Mas talvez eu consiga criar algo melhor depois
+	if (groundHit.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1 ) { // grass
+		UGameplayStatics::PlaySoundAtLocation(this->GetWorld(), this->grassFootstepSounds, this->GetOwner()->GetActorLocation());
+	}
 }
-
-
-// Called every frame
-void ULR_FootstepAudioComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
