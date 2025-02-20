@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class UTimelineComponent> attackTimelineComponent;
 
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class ULR_FootstepAudioComponent> footstepComponent;
+
 	
 
 	// =================================================
@@ -102,6 +105,9 @@ public:
 
 	UFUNCTION(Category="Enemy Movement")
 	bool HasPathBlock(ELRPlayerMovementDirection direction);
+
+	UFUNCTION(Category="Enemy Movement")
+	void PlayFootstepSound();
 
 
 	

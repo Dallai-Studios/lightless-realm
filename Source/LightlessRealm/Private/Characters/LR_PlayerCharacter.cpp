@@ -12,13 +12,13 @@
 #include "Components/TimelineComponent.h"
 #include "Tools/LR_Utils.h"
 #include "Camera/CameraShakeBase.h"
+#include "Components/LR_FootstepAudioComponent.h"
 
 
 // =================================================
 // Metodos de Life Cycle:
 // =================================================
-ALR_PlayerCharacter::ALR_PlayerCharacter()
-{
+ALR_PlayerCharacter::ALR_PlayerCharacter() {
 	PrimaryActorTick.bCanEverTick = true;
 
 	this->springArmComponent = this->CreateDefaultSubobject<USpringArmComponent>("Spring Arm");
@@ -36,6 +36,8 @@ ALR_PlayerCharacter::ALR_PlayerCharacter()
 	this->abilitySystemComponent = this->CreateDefaultSubobject<UAbilitySystemComponent>("Ability System");
 
 	this->attackTimelineComponent = this->CreateDefaultSubobject<UTimelineComponent>("Attack Animation Timeline");
+
+	this->footstepComponent = this->CreateDefaultSubobject<ULR_FootstepAudioComponent>("Footstep Audio Component");
 }
 
 void ALR_PlayerCharacter::BeginPlay() {
@@ -152,8 +154,9 @@ void ALR_PlayerCharacter::HandleMovementEffects() {
 	this->playerCanReceiveMovementInput = true;
 	this->playerCanReceiveAttackInput = true;
 
+	this->footstepComponent->PlayFootstepSoundAtActorLocation();
+	
 	if (IsValid(this->gameEvents)) this->gameEvents->OnPlayerPerformAction.Broadcast(this->GetActorLocation());
-	// todo criar um actor component que toca a os efeitos de audio depois que isso foi executado;
 }
 
 

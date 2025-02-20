@@ -30,7 +30,10 @@ public:
 	TObjectPtr<class USpotLightComponent> innerLight;
 
 	UPROPERTY(EditAnywhere, Category="Components")
-	TObjectPtr<class UTimelineComponent> attackTimelineComponent;	
+	TObjectPtr<class UTimelineComponent> attackTimelineComponent;
+
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class ULR_FootstepAudioComponent> footstepComponent;
 
 
 

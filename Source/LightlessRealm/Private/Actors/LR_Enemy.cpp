@@ -3,6 +3,7 @@
 #include "Characters/LR_PlayerCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/LR_FootstepAudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Data/LR_EnemyPDA.h"
@@ -33,6 +34,8 @@ ALR_Enemy::ALR_Enemy() {
 	}
 
 	this->attackTimelineComponent = this->CreateDefaultSubobject<UTimelineComponent>("Attack Timeline Component");
+
+	this->footstepComponent = this->CreateDefaultSubobject<ULR_FootstepAudioComponent>("Footstep Audio Component");
 }
 
 void ALR_Enemy::BeginPlay() {
@@ -107,6 +110,13 @@ void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection, FVector 
 		this->targetLocation = calculatedNextLocation;
 		return;
 	}
+
+	FTimerHandle movementDelayTimer;
+	this->GetWorld()->GetTimerManager().SetTimer(movementDelayTimer, this, &ALR_Enemy::PlayFootstepSound, 0.1);
+}
+
+void ALR_Enemy::PlayFootstepSound() {
+	this->footstepComponent->PlayFootstepSoundAtActorLocation();
 }
 
 void ALR_Enemy::MoveTowardsTargetLocation() {
