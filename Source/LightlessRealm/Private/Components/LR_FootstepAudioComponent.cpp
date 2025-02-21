@@ -38,11 +38,10 @@ void ULR_FootstepAudioComponent::PlayFootstepSoundAtActorLocation() {
 	
 	switch(groundHit.PhysMaterial->SurfaceType) {
 		case SurfaceType1: // acho que isso aqui é grass.
-			check(this->grassFootstepSounds);
-			UGameplayStatics::PlaySoundAtLocation(this->GetWorld(), this->grassFootstepSounds, this->GetOwner()->GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(this->GetWorld(), this->grassFootstepSounds, this->GetOwner()->GetActorLocation(), 1, 1,0, this->attenuationSettings);
 			break;
 		default:
-			UGameplayStatics::PlaySoundAtLocation(this->GetWorld(), this->grassFootstepSounds, this->GetOwner()->GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(this->GetWorld(), this->grassFootstepSounds, this->GetOwner()->GetActorLocation(), 1, 1,0, this->attenuationSettings);
 			break;
 	}
 }

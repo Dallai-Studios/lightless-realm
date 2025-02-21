@@ -70,7 +70,7 @@ void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection, FVector 
 	if (this->canOnlyMoveWithActiveTarget && !this->activeTarget) return;
 	
 	if (this->HasPathBlock(movementDirection)) return;
-
+	
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_RIGHT) {
 		FVector flippedScale = this->flipbookComponent->GetRelativeScale3D();
 		if (flippedScale.X > 0) flippedScale.X *= -1;
@@ -82,6 +82,9 @@ void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection, FVector 
 		if (flippedScale.X < 0) flippedScale.X *= -1;
 		this->flipbookComponent->SetRelativeScale3D(flippedScale);
 	}
+
+	// Adiciona um pequeno delay pra tocar o som dos passos do inimigo no final da animação de movimento. O rate time ta hardcoded mesmo por enquanto.
+	this->GetWorld()->GetTimerManager().SetTimer(this->movementDelayTimer, this, &ALR_Enemy::PlayFootstepSound, 0.1);
 	
 	if (movementDirection == ELRPlayerMovementDirection::DIRECTION_UP) {
 		FVector calculatedNextLocation = this->GetActorLocation() + (this->GetActorForwardVector() * this->movementSize);
@@ -110,10 +113,6 @@ void ALR_Enemy::MoveEnemy(ELRPlayerMovementDirection movementDirection, FVector 
 		this->targetLocation = calculatedNextLocation;
 		return;
 	}
-	
-	this->GetWorld()
-		->GetTimerManager()
-		.SetTimer(this->movementDelayTimer, this, &ALR_Enemy::PlayFootstepSound, 0.1);
 }
 
 void ALR_Enemy::PlayFootstepSound() {

@@ -10,9 +10,14 @@ class LIGHTLESSREALM_API ULR_FootstepAudioComponent : public UActorComponent {
 public:
 	UPROPERTY(EditAnywhere, Category="Component Config")
 	class USoundBase* grassFootstepSounds;
+
+	UPROPERTY(EditAnywhere, Category="Component Config")
+	class USoundAttenuation* attenuationSettings;
 	
 	UPROPERTY(EditAnywhere, Category="Component Config")
 	float floorDetectionRaySize = 100;
+
+
 	
 public:
 	// ======================================================
