@@ -13,5 +13,5 @@ void ULR_EntityTextInfoComponent::BeginPlay() {
 }
 
 void ULR_EntityTextInfoComponent::SpawnDamageNumber(FTransform displayPosition) {
-	
+		
 }

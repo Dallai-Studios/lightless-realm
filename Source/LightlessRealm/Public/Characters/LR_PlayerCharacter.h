@@ -3,10 +3,11 @@
 #include "Enums/ELRPlayerAttackDirection.h"
 #include "Enums/ELRPlayerMovementDirection.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/LR_DamageInterface.h"
 #include "LR_PlayerCharacter.generated.h"
 
 UCLASS()
-class LIGHTLESSREALM_API ALR_PlayerCharacter : public ACharacter
+class LIGHTLESSREALM_API ALR_PlayerCharacter : public ACharacter, public ILR_DamageInterface
 {
 	GENERATED_BODY()
 
@@ -34,6 +35,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class ULR_FootstepAudioComponent> footstepComponent;
+
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class ULR_EntityTextInfoComponent> textInfoComponent;
+	
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class ULR_EntityAttributesComponent> attributesComponent;
 
 
 

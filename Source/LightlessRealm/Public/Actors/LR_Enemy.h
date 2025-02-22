@@ -3,10 +3,11 @@
 #include "Enums/ELRPlayerAttackDirection.h"
 #include "GameFramework/Actor.h"
 #include "Enums/ELRPlayerMovementDirection.h"
+#include "Interfaces/LR_DamageInterface.h"
 #include "LR_Enemy.generated.h"
 
 UCLASS()
-class LIGHTLESSREALM_API ALR_Enemy : public AActor {
+class LIGHTLESSREALM_API ALR_Enemy : public AActor, public ILR_DamageInterface {
 	GENERATED_BODY()
 
 public:

@@ -12,7 +12,10 @@
 #include "Components/TimelineComponent.h"
 #include "Tools/LR_Utils.h"
 #include "Camera/CameraShakeBase.h"
+#include "Components/LR_EntityAttributesComponent.h"
+#include "Components/LR_EntityTextInfoComponent.h"
 #include "Components/LR_FootstepAudioComponent.h"
+
 
 
 // =================================================
@@ -38,6 +41,10 @@ ALR_PlayerCharacter::ALR_PlayerCharacter() {
 	this->attackTimelineComponent = this->CreateDefaultSubobject<UTimelineComponent>("Attack Animation Timeline");
 
 	this->footstepComponent = this->CreateDefaultSubobject<ULR_FootstepAudioComponent>("Footstep Audio Component");
+
+	this->textInfoComponent = this->CreateDefaultSubobject<ULR_EntityTextInfoComponent>("Entity Text Info Component");
+
+	this->attributesComponent = this->CreateDefaultSubobject<ULR_EntityAttributesComponent>("Attributes Component");
 }
 
 void ALR_PlayerCharacter::BeginPlay() {
@@ -276,6 +283,8 @@ bool ALR_PlayerCharacter::CheckForAttackableEntity(ELRPlayerAttackDirection atta
 void ALR_PlayerCharacter::ConfigureCharacter() {
 	check(this->selectedCharacter);
 
+	this->attributesComponent->BuildAttributesFromCharacter(this->selectedCharacter);
+	
 	this->flipbookComponent->SetFlipbook(this->selectedCharacter->characterFlipbook);
 
 	if (this->selectedCharacter->hasNoInnerLight) {
