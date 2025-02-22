@@ -1,5 +1,6 @@
 ﻿#include "Components/LR_EntityAttributesComponent.h"
 
+#include "Data/LR_EnemyPDA.h"
 #include "Data/LR_PlayerCharacterPDA.h"
 
 ULR_EntityAttributesComponent::ULR_EntityAttributesComponent() {
@@ -19,6 +20,13 @@ void ULR_EntityAttributesComponent::BuildAttributesFromCharacter(ULR_PlayerChara
 	this->maxHealth = character->maxHealth;
 	this->magika = character->magika;
 	this->maxMagika = character->maxMagika;
+}
+
+void ULR_EntityAttributesComponent::BuildAttributesFromEnemy(ULR_EnemyPDA* enemy) {
+	this->health = enemy->health;
+	this->maxHealth = enemy->maxHealth;
+	this->magika = enemy->magika;
+	this->maxMagika = enemy->maxMagika;
 }
 
 void ULR_EntityAttributesComponent::SetNewMaxHealthAmount(float maxHealthAmount) {

@@ -40,10 +40,10 @@ public:
 	float maxHealth;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
-	float mana;
+	float magika;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
-	float maxMana;
+	float maxMagika;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
 	float sightSize;

@@ -38,6 +38,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Attribute Functions")
 	void BuildAttributesFromCharacter(class ULR_PlayerCharacterPDA* character);	
+
+	UFUNCTION(BlueprintCallable, Category="Attribute Functions")
+	void BuildAttributesFromEnemy(class ULR_EnemyPDA* enemy);
 	
 	UFUNCTION(BlueprintCallable, Category="Attribute Functions")
 	void SetNewMaxHealthAmount(float maxHealthAmount);
