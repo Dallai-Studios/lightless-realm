@@ -1,5 +1,7 @@
 ﻿#include "Components/LR_EntityAttributesComponent.h"
 
+#include "Data/LR_PlayerCharacterPDA.h"
+
 ULR_EntityAttributesComponent::ULR_EntityAttributesComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
 }
@@ -10,6 +12,13 @@ void ULR_EntityAttributesComponent::BeginPlay() {
 
 void ULR_EntityAttributesComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void ULR_EntityAttributesComponent::BuildAttributesFromCharacter(ULR_PlayerCharacterPDA* character) {
+	this->health = character->health;
+	this->maxHealth = character->maxHealth;
+	this->magika = character->magika;
+	this->maxMagika = character->maxMagika;
 }
 
 void ULR_EntityAttributesComponent::SetNewMaxHealthAmount(float maxHealthAmount) {
