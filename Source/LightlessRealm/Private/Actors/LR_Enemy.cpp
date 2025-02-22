@@ -3,6 +3,8 @@
 #include "Characters/LR_PlayerCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/LR_EntityAttributesComponent.h"
+#include "Components/LR_EntityTextInfoComponent.h"
 #include "Components/LR_FootstepAudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/TimelineComponent.h"
@@ -36,6 +38,10 @@ ALR_Enemy::ALR_Enemy() {
 	this->attackTimelineComponent = this->CreateDefaultSubobject<UTimelineComponent>("Attack Timeline Component");
 
 	this->footstepComponent = this->CreateDefaultSubobject<ULR_FootstepAudioComponent>("Footstep Audio Component");
+
+	this->textInfoComponent = this->CreateDefaultSubobject<ULR_EntityTextInfoComponent>("Text Info Component");
+
+	this->attributesComponent = this->CreateDefaultSubobject<ULR_EntityAttributesComponent>("Attibutes Component");
 }
 
 void ALR_Enemy::BeginPlay() {

@@ -29,8 +29,14 @@ public:
 	UPROPERTY(EditAnywhere, Category="Components")
 	TObjectPtr<class ULR_FootstepAudioComponent> footstepComponent;
 
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class ULR_EntityTextInfoComponent> textInfoComponent;
+
+	UPROPERTY(EditAnywhere, Category="Components")
+	TObjectPtr<class ULR_EntityAttributesComponent> attributesComponent;
 	
 
+	
 	// =================================================
 	// Dados e Eventos:
 	// =================================================
