@@ -15,6 +15,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Component Config")
 	TSubclassOf<class ALR_EntityGameTextManager> textActor;
 	
+
 	
 public:
 	// ===========================================
@@ -23,6 +24,7 @@ public:
 	ULR_EntityTextInfoComponent();
 	virtual void BeginPlay() override;
 
+	
 
 	// ===========================================
 	// Metodos de spawn de Texto:

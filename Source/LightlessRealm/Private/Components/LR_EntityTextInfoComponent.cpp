@@ -11,3 +11,7 @@ ULR_EntityTextInfoComponent::ULR_EntityTextInfoComponent() {
 void ULR_EntityTextInfoComponent::BeginPlay() {
 	Super::BeginPlay();
 }
+
+void ULR_EntityTextInfoComponent::SpawnDamageNumber(FTransform displayPosition) {
+	
+}
