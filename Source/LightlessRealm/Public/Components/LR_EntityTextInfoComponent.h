@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Enums/ELRTextContentAnimationDirection.h"
 #include "LR_EntityTextInfoComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -13,8 +14,7 @@ public:
 	// Configurações:
 	// ===========================================
 	UPROPERTY(EditAnywhere, Category="Component Config")
-	TSubclassOf<class ALR_EntityGameTextManager> textActor;
-	
+	TSubclassOf<class ALR_EntityGameTextManager> textActorToSpawn;
 
 	
 public:
@@ -30,5 +30,5 @@ public:
 	// Metodos de spawn de Texto:
 	// ===========================================
 	UFUNCTION(BlueprintCallable, Category="Damage Numbers")
-	void SpawnDamageNumber(FTransform displayPosition);
+	void SpawnDamageNumber(FTransform SpawnTransform, ELRTextContentAnimationDirection animationDirection);
 };
