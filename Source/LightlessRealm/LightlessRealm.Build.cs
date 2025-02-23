@@ -16,7 +16,7 @@ public class LightlessRealm : ModuleRules
 			"Paper2D", 
 			"GameplayAbilities", 
 			"GameplayTags", 
-			"GameplayTasks"
+			"GameplayTasks",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

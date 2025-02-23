@@ -7,9 +7,6 @@
 UCLASS()
 class LIGHTLESSREALM_API ALR_EntityGameTextManager : public AActor {
 	GENERATED_BODY()
-
-public:
-	UPROPERTY()
 	
 public:
 	// ===========================================
