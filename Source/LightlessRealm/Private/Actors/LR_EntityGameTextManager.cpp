@@ -28,5 +28,25 @@ void ALR_EntityGameTextManager::BeginPlay() {
 }
 
 void ALR_EntityGameTextManager::AnimateTextContent(ELRTextContentAnimationDirection animationDirection) {
+	FOnTimelineVector timelineCallback;
+	timelineCallback.BindUFunction(this, "UpdateTextAnimationPosition");
+
+	FOnTimelineVector timelineFinishCallback;
 	
+	switch (animationDirection) {
+		case ELRTextContentAnimationDirection::ANIMTE_UP: this->animationTimelineComponent->AddInterpVector(this->animationUpCurve, timelineCallback); break;
+		case ELRTextContentAnimationDirection::ANIMATE_DOWN: this->animationTimelineComponent->AddInterpVector(this->animationDownCurve, timelineCallback); break;
+		case ELRTextContentAnimationDirection::ANIMTE_LEFT: this->animationTimelineComponent->AddInterpVector(this->animationLeftCurve, timelineCallback); break;
+		case ELRTextContentAnimationDirection::ANIMATE_RIGHT: this->animationTimelineComponent->AddInterpVector(this->animationRightCurve, timelineCallback); break;
+	}
+
+	this->animationTimelineComponent->PlayFromStart();
+}
+
+void ALR_EntityGameTextManager::UpdateTextAnimationPosition(FVector value) {
+	this->widgetComponent->SetRelativeLocation(value);
+}
+
+void ALR_EntityGameTextManager::FinishTextAnimationPosition() {
+	this->widgetComponent->SetRelativeLocation(FVector(0, 0, 0));
 }
