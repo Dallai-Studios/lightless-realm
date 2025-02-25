@@ -206,30 +206,15 @@ void ALR_PlayerCharacter::AnimateAttack(ELRPlayerAttackDirection attackDirection
 	timelineFinishCallback.BindUFunction(this, FName("FinishAttackAnimation"));
 
 	this->attackTimelineComponent->SetTimelineFinishedFunc(timelineFinishCallback);
+
+	switch (attackDirection) {
+		case ELRPlayerAttackDirection::ATTACK_UP: this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback); break;
+		case ELRPlayerAttackDirection::ATTACK_DOWN: this->attackTimelineComponent->AddInterpVector(this->attackDownAnimationCurve, timelineCallback); break;
+		case ELRPlayerAttackDirection::ATTACK_LEFT: this->attackTimelineComponent->AddInterpVector(this->attackLeftAnimationCurve, timelineCallback); break;
+		case ELRPlayerAttackDirection::ATTACK_RIGHT: this->attackTimelineComponent->AddInterpVector(this->attackRightAnimationCurve, timelineCallback); break;
+	}
 	
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_UP) {
-		this->attackTimelineComponent->AddInterpVector(this->attackUpAnimationCurve, timelineCallback);
-		this->attackTimelineComponent->PlayFromStart();
-		return;
-	}
-
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_DOWN) {
-		this->attackTimelineComponent->AddInterpVector(this->attackDownAnimationCurve, timelineCallback);
-		this->attackTimelineComponent->PlayFromStart();
-		return;
-	}
-
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_RIGHT) {
-		this->attackTimelineComponent->AddInterpVector(this->attackRightAnimationCurve, timelineCallback);
-		this->attackTimelineComponent->PlayFromStart();
-		return;
-	}
-
-	if (attackDirection == ELRPlayerAttackDirection::ATTACK_LEFT) {
-		this->attackTimelineComponent->AddInterpVector(this->attackLeftAnimationCurve, timelineCallback);
-		this->attackTimelineComponent->PlayFromStart();
-		return;
-	}
+	this->attackTimelineComponent->PlayFromStart();
 }
 
 void ALR_PlayerCharacter::UpdateAttackAnimation(FVector vectorValue) {

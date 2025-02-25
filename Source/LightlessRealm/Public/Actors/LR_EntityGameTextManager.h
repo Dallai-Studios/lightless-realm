@@ -40,9 +40,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Animation")
 	void AnimateTextContent(ELRTextContentAnimationDirection animationDirection);
 
-	UFUNCTION()
+	UFUNCTION(Category="Animation")
 	void UpdateTextAnimationPosition(FVector value);
 
-	UFUNCTION()
+	UFUNCTION(Category="Animation")
 	void FinishTextAnimationPosition();
 };
