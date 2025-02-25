@@ -16,6 +16,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Component Config")
 	TSubclassOf<class ALR_EntityGameTextManager> textActorToSpawn;
 
+
 	
 public:
 	// ===========================================
