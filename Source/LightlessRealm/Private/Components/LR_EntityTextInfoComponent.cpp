@@ -20,5 +20,5 @@ void ULR_EntityTextInfoComponent::SpawnDamageNumber(FTransform spawnTransform, E
 
 	auto spawnedTextManager = this->GetWorld()->SpawnActor<ALR_EntityGameTextManager>(this->textActorToSpawn, spawnTransform, params);
 
-	// spawnedTextManager->AnimateTextContent(animationDirection);
+	spawnedTextManager->AnimateTextContent(animationDirection);
 }
